@@ -1,0 +1,22 @@
+## Claude Code
+.claude/settings.local.json
+
+## .NET
+bin/
+obj/
+*.user
+*.suo
+
+## Visual Studio / Rider
+.vs/
+.idea/
+*.userosscache
+*.sln.docstates
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ll]og/
+[Ll]ogs/

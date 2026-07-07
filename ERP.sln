@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERP.Web", "ERP.Web\ERP.Web.csproj", "{74B761DF-0D98-4B52-8EED-37CDA69DB7B4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERP.BusinessLogic", "ERP.BusinessLogic\ERP.BusinessLogic.csproj", "{0250EB25-9F9C-448C-9131-25DD67F59560}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERP.DataAccess", "ERP.DataAccess\ERP.DataAccess.csproj", "{F28CAFE3-9BCC-4D2B-B538-6849C80E8480}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{74B761DF-0D98-4B52-8EED-37CDA69DB7B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74B761DF-0D98-4B52-8EED-37CDA69DB7B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74B761DF-0D98-4B52-8EED-37CDA69DB7B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74B761DF-0D98-4B52-8EED-37CDA69DB7B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0250EB25-9F9C-448C-9131-25DD67F59560}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0250EB25-9F9C-448C-9131-25DD67F59560}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0250EB25-9F9C-448C-9131-25DD67F59560}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0250EB25-9F9C-448C-9131-25DD67F59560}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F28CAFE3-9BCC-4D2B-B538-6849C80E8480}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F28CAFE3-9BCC-4D2B-B538-6849C80E8480}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F28CAFE3-9BCC-4D2B-B538-6849C80E8480}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F28CAFE3-9BCC-4D2B-B538-6849C80E8480}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

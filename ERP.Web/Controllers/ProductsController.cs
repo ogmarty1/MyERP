@@ -1,6 +1,7 @@
 using ERP.BusinessLogic.DTOs;
 using ERP.BusinessLogic.Services;
 using ERP.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -28,6 +29,7 @@ namespace ERP.Web.Controllers
             return View(products);
         }
 
+        [Authorize(Roles = "Manager,Admin")]
         public async Task<IActionResult> Create()
         {
             var viewModel = new ProductFormViewModel();
@@ -36,6 +38,7 @@ namespace ERP.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Manager,Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ProductFormViewModel model)
         {
@@ -62,6 +65,7 @@ namespace ERP.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Manager,Admin")]
         public async Task<IActionResult> Edit(int id)
         {
             var product = await _productService.GetByIdAsync(id);
@@ -88,6 +92,7 @@ namespace ERP.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Manager,Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ProductFormViewModel model)
         {

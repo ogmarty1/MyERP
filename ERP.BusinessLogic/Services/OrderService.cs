@@ -1,6 +1,7 @@
 using ERP.BusinessLogic.DTOs;
 using ERP.DataAccess.Data;
 using ERP.DataAccess.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERP.BusinessLogic.Services
 {
@@ -11,6 +12,14 @@ namespace ERP.BusinessLogic.Services
         public OrderService(ApplicationDbContext context)
         {
             _context = context;
+        }
+
+        public async Task<List<Order>> GetAllAsync()
+        {
+            return await _context.Orders
+                .Include(o => o.Customer)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
         }
 
         public async Task<Order> CreateOrderAsync(CreateOrderRequest request)

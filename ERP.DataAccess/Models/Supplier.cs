@@ -13,6 +13,9 @@ namespace ERP.DataAccess.Models
         [StringLength(150)]
         public string? CompanyName { get; set; }
 
+        [StringLength(150)]
+        public string? ContactPerson { get; set; }
+
         [Required]
         [StringLength(50)]
         public string TaxNumber { get; set; } = string.Empty;

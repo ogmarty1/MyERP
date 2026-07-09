@@ -25,7 +25,7 @@ namespace ERP.BusinessLogic.Services
             var signedQuantity = request.MovementType == MovementType.Inflow
                 ? request.Quantity
                 : -request.Quantity;
-            product.QuantityInStock += (int)Math.Round(signedQuantity);
+            product.QuantityInStock += signedQuantity;
 
             var movement = new InventoryMovement
             {

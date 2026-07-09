@@ -8,9 +8,6 @@ namespace ERP.DataAccess.Configurations
     {
         public void Configure(EntityTypeBuilder<InventoryMovement> builder)
         {
-            builder.Property(im => im.Quantity)
-                .HasColumnType("decimal(18,2)");
-
             builder.HasOne(im => im.Product)
                 .WithMany()
                 .HasForeignKey(im => im.ProductId)

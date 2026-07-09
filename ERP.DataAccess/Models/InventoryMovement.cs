@@ -16,7 +16,7 @@ namespace ERP.DataAccess.Models
         // Navigation property - движението се отнася за един продукт
         public Product Product { get; set; } = null!;
 
-        public decimal Quantity { get; set; }
+        public int Quantity { get; set; }
 
         public MovementType MovementType { get; set; }
 

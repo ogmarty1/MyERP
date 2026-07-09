@@ -19,9 +19,14 @@ namespace ERP.DataAccess.Models
         public string SKU { get; set; } = string.Empty; // Уникален код на продукта
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal Price { get; set; }
+        public decimal PurchasePrice { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal SalePrice { get; set; }
 
         public int QuantityInStock { get; set; }
+
+        public int MinimumQuantity { get; set; }
 
         public bool IsActive { get; set; } = true;
 
@@ -30,5 +35,11 @@ namespace ERP.DataAccess.Models
 
         // Navigation property - продуктът принадлежи на една категория
         public Category Category { get; set; } = null!;
+
+        // Foreign Key към Supplier - опционален, не всеки продукт има зададен доставчик
+        public int? SupplierId { get; set; }
+
+        // Navigation property - продуктът може да е свързан с един доставчик
+        public Supplier? Supplier { get; set; }
     }
 }

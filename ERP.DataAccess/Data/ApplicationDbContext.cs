@@ -38,6 +38,13 @@ namespace ERP.DataAccess.Data
                 .HasIndex(p => p.SKU)
                 .IsUnique();
 
+            // Fluent API конфигурация за Product -> Supplier връзката (опционална)
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Supplier)
+                .WithMany()
+                .HasForeignKey(p => p.SupplierId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Прилага всички IEntityTypeConfiguration<T> класове от текущия assembly
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }

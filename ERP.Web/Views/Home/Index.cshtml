@@ -1,8 +1,82 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@model ERP.BusinessLogic.DTOs.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<h1 class="mb-4">Dashboard</h1>
+
+@if (User.IsInRole("Manager") || User.IsInRole("Admin"))
+{
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-success h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Total Sales Revenue</h6>
+                    <p class="card-text fs-2 fw-bold">@Model.TotalSalesRevenue.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-warning h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Pending Orders</h6>
+                    <p class="card-text fs-2 fw-bold">@Model.PendingOrdersCount</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-danger h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Low Stock Alerts</h6>
+                    <p class="card-text fs-2 fw-bold">@Model.LowStockProducts.Count</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mb-3">Low Stock Alerts</h4>
+    @if (Model.LowStockProducts.Count == 0)
+    {
+        <p class="text-muted">No products are currently low on stock.</p>
+    }
+    else
+    {
+        <table class="table table-striped table-bordered align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>SKU</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Quantity In Stock</th>
+                    <th>Minimum Quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var product in Model.LowStockProducts)
+                {
+                    <tr class="table-danger">
+                        <td>@product.SKU</td>
+                        <td>@product.Name</td>
+                        <td>@product.Category?.Name</td>
+                        <td>@product.QuantityInStock</td>
+                        <td>@product.MinimumQuantity</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+else
+{
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary h-100">
+                <div class="card-body">
+                    <h6 class="card-title">My Orders</h6>
+                    <p class="card-text fs-2 fw-bold">@Model.MyOrdersCount</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}

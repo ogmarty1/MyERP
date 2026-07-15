@@ -62,6 +62,7 @@ namespace ERP.Web.Controllers
                 SupplierId = model.SupplierId
             });
 
+            TempData["SuccessMessage"] = $"Product \"{model.Name}\" was created successfully.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -120,6 +121,7 @@ namespace ERP.Web.Controllers
                 SupplierId = model.SupplierId
             });
 
+            TempData["SuccessMessage"] = $"Product \"{model.Name}\" was updated successfully.";
             return RedirectToAction(nameof(Index));
         }
 

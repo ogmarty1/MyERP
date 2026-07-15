@@ -1,6 +1,7 @@
 using ERP.BusinessLogic.DTOs;
 using ERP.BusinessLogic.Services;
 using ERP.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,12 +22,14 @@ namespace ERP.Web.Controllers
             return View(customers);
         }
 
+        [Authorize(Roles = "Manager,Admin")]
         public IActionResult Create()
         {
             return View(new CustomerFormViewModel());
         }
 
         [HttpPost]
+        [Authorize(Roles = "Manager,Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CustomerFormViewModel model)
         {
@@ -44,9 +47,11 @@ namespace ERP.Web.Controllers
                 IsActive = model.IsActive
             });
 
+            TempData["SuccessMessage"] = $"Customer \"{model.Name}\" was created successfully.";
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Manager,Admin")]
         public async Task<IActionResult> Edit(int id)
         {
             var customer = await _customerService.GetByIdAsync(id);
@@ -69,6 +74,7 @@ namespace ERP.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Manager,Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, CustomerFormViewModel model)
         {
@@ -90,9 +96,11 @@ namespace ERP.Web.Controllers
                 IsActive = model.IsActive
             });
 
+            TempData["SuccessMessage"] = $"Customer \"{model.Name}\" was updated successfully.";
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Manager,Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var customer = await _customerService.GetByIdAsync(id);
@@ -103,6 +111,7 @@ namespace ERP.Web.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Manager,Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
@@ -119,6 +128,7 @@ namespace ERP.Web.Controllers
                 return View(customer);
             }
 
+            TempData["SuccessMessage"] = "Customer was deleted successfully.";
             return RedirectToAction(nameof(Index));
         }
     }

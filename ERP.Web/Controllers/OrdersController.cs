@@ -75,6 +75,7 @@ namespace ERP.Web.Controllers
                 }).ToList()
             });
 
+            TempData["SuccessMessage"] = $"Order \"{orderNumber}\" was created successfully.";
             return RedirectToAction(nameof(Index));
         }
 

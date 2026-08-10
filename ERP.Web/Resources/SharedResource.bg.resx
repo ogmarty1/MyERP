@@ -211,4 +211,19 @@
   <data name="Unit price must be zero or greater." xml:space="preserve"><value>Единичната цена трябва да е нула или по-голяма.</value></data>
   <data name="Username is required." xml:space="preserve"><value>Потребителското име е задължително.</value></data>
   <data name="Password is required." xml:space="preserve"><value>Паролата е задължителна.</value></data>
+
+  <!-- DataTables -->
+  <data name="Search:" xml:space="preserve"><value>Търсене:</value></data>
+  <data name="Show _MENU_ entries" xml:space="preserve"><value>Покажи _MENU_ реда</value></data>
+  <data name="No matching records found" xml:space="preserve"><value>Няма намерени резултати</value></data>
+  <data name="Showing _START_ to _END_ of _TOTAL_ entries" xml:space="preserve"><value>Показани от _START_ до _END_ от общо _TOTAL_ реда</value></data>
+  <data name="Showing 0 to 0 of 0 entries" xml:space="preserve"><value>Показани 0 до 0 от общо 0 реда</value></data>
+  <data name="(filtered from _MAX_ total entries)" xml:space="preserve"><value>(филтрирани от общо _MAX_ реда)</value></data>
+  <data name="First" xml:space="preserve"><value>Първа</value></data>
+  <data name="Last" xml:space="preserve"><value>Последна</value></data>
+  <data name="Next" xml:space="preserve"><value>Следваща</value></data>
+  <data name="Previous" xml:space="preserve"><value>Предишна</value></data>
+  <data name="Copy" xml:space="preserve"><value>Копирай</value></data>
+  <data name="Excel" xml:space="preserve"><value>Excel</value></data>
+  <data name="Print" xml:space="preserve"><value>Печат</value></data>
 </root>

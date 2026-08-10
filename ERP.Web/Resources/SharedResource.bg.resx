@@ -230,4 +230,14 @@
   <!-- SweetAlert2 -->
   <data name="This action cannot be undone." xml:space="preserve"><value>Това действие не може да бъде отменено.</value></data>
   <data name="Yes, delete it" xml:space="preserve"><value>Да, изтрий</value></data>
+
+  <!-- Error pages -->
+  <data name="Page Not Found" xml:space="preserve"><value>Страницата не е намерена</value></data>
+  <data name="The page you are looking for doesn't exist or has been moved." xml:space="preserve"><value>Страницата, която търсите, не съществува или е преместена.</value></data>
+
+  <!-- Product delete -->
+  <data name="Delete Product" xml:space="preserve"><value>Изтриване на продукт</value></data>
+  <data name="Are you sure you want to delete this product?" xml:space="preserve"><value>Сигурни ли сте, че искате да изтриете този продукт?</value></data>
+  <data name="This product cannot be deleted because it has existing order history." xml:space="preserve"><value>Този продукт не може да бъде изтрит, защото има история на поръчки.</value></data>
+  <data name="Product was deleted successfully." xml:space="preserve"><value>Продуктът беше изтрит успешно.</value></data>
 </root>

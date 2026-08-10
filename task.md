@@ -1,29 +1,26 @@
-# TASK: UI/UX Polish - Stage 2: Table UX Enhancements & Export Capabilities
+# TASK: UI/UX Polish - Stage 3: SweetAlert2 Modals, Toastr Notifications & UX Polish
 
 ## Context
-Continuing UI/UX polish for MyERP. Now that Euro (€) formatting and multi-language support (BG/EN) are configured, we need to standardize and enhance all entity data tables (Products, Customers, Suppliers, Orders) with client-side interactive capabilities: fast instant filtering, seamless pagination, status badges, and data export features.
+Continuing UI/UX polish for MyERP. Following the successful completion of Stage 2 (DataTables & Export), Stage 3 focuses on replacing native browser dialogs (`alert()`, `confirm()`) with modern, enterprise-grade UX components (SweetAlert2 and Toastr notifications) across all modules.
 
 ## Tasks to Complete
 
-### 1. DataTables Integration & Localization
-- [x] Add DataTables CSS/JS (via CDN) and its Bootstrap 5 theme integration into `_Layout.cshtml` or specific views.
-- [x] Initialize DataTables on the main list views:
-  - `Products/Index.cshtml`
-  - `Customers/Index.cshtml`
-  - `Suppliers/Index.cshtml`
-  - `Orders/Index.cshtml`
-- [x] Configure DataTables to dynamically respect the active UI culture (BG / EN) for UI labels (search input, zero records, pagination).
+### 1. External Libraries Integration
+- [x] Add **SweetAlert2** CSS/JS (via CDN) into `_Layout.cshtml`.
+- [x] Add **Toastr** CSS/JS (via CDN) into `_Layout.cshtml`.
 
-### 2. Table Visual & UX Improvements
-- [x] Ensure all tables maintain Bootstrap 5 styling (`table-hover`, `table-striped`, `align-middle`).
-- [x] Preserve existing critical stock highlighting (`table-danger` for low inventory).
-- [x] Enhance status indicators in `Orders/Index.cshtml` using Bootstrap Badges (e.g., Completed -> `bg-success`, Pending -> `bg-warning`, Cancelled -> `bg-danger`).
-- [x] Add compact action button groups (Edit, Details, Delete) with clear Bootstrap Icons for better mobile responsiveness.
+### 2. Toastr Notifications Setup (TempData & Feedback)
+- [x] Implement a global script/partial view (`_ValidationScriptsPartial` or layout script) that automatically intercepts ASP.NET Core `TempData["Success"]` and `TempData["Error"]` messages and displays them via **Toastr**. (Kept the app's existing `TempData["SuccessMessage"]` key rather than renaming to `"Success"`, and added a matching `"ErrorMessage"` key for symmetry.)
+- [x] Update Controllers (Products, Customers, Suppliers, Orders, Account) to set `TempData["Success"]` or `TempData["Error"]` upon successful actions or caught exceptions (`DbUpdateException`). Products/Orders/Account had no failure path needing a new error toast (Account's invalid-login case stays inline, matching standard login UX); Customers/Categories/Suppliers `DbUpdateException` handling now redirects with `TempData["ErrorMessage"]` instead of re-rendering an inline validation summary.
 
-### 3. Data Export Functionality
-- [x] Enable DataTables Buttons extension (Copy, Excel, Print/PDF) for key administrative tables (Products and Orders).
-- [x] Ensure exported Excel/Print files properly display Euro formatting (€) and correct UTF-8 character encoding.
+### 3. SweetAlert2 Confirmation Modals
+- [x] Replace standard `confirm()` browser dialogs with **SweetAlert2** confirmation popups for deleting records (Customers, Categories, Suppliers). Products has no delete feature in this codebase (no service/controller/route) and Orders has no cancel/status-change feature, so neither had a `confirm()` to replace — noted rather than inventing new CRUD endpoints.
+- [x] Ensure delete actions trigger a warning modal ("Are you sure you want to delete this item? This action cannot be undone.") before submitting the form.
 
-### 4. Verification & Build Check
-- [x] Run `dotnet build` to ensure zero compilation errors or warnings.
-- [x] Verify that live search, pagination, and dynamic language switching work smoothly together without breaking server-side model data.
+### 4. Global UX & Form Enhancements
+- [x] Add loading indicators / spinners (disabled button + spinner icon) on submit buttons during form posts (Create/Edit) to prevent duplicate submissions.
+- [x] Ensure proper styling alignment with existing Bootstrap 5 layout.
+
+### 5. Verification & Build Check
+- [x] Run `dotnet build` to verify zero compilation errors or warnings.
+- [x] Check that SweetAlert2 popups and Toastr notifications respect multi-language settings (BG/EN) or display localized text cleanly.

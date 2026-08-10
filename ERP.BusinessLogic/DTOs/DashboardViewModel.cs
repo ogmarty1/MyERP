@@ -9,9 +9,16 @@ namespace ERP.BusinessLogic.DTOs
         // Employee stats
         public int MyOrdersCount { get; set; }
 
-        // Manager / Admin stats
-        public decimal TotalSalesRevenue { get; set; }
-        public int PendingOrdersCount { get; set; }
+        // Manager / Admin KPIs
+        public decimal MonthlyRevenue { get; set; }
+        public int NewMonthlyOrdersCount { get; set; }
+        public int TotalActiveCustomers { get; set; }
+        public int CriticalStockCount { get; set; }
+
         public List<Product> LowStockProducts { get; set; } = new();
+
+        // Chart data (Manager / Admin only)
+        public List<MonthlySalesPoint> MonthlySalesTrend { get; set; } = new();
+        public List<TopSellingProductItem> TopSellingProducts { get; set; } = new();
     }
 }

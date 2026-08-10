@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Navigation / layout -->
+  <data name="Home" xml:space="preserve"><value>Начало</value></data>
+  <data name="Products" xml:space="preserve"><value>Продукти</value></data>
+  <data name="Customers" xml:space="preserve"><value>Клиенти</value></data>
+  <data name="Orders" xml:space="preserve"><value>Поръчки</value></data>
+  <data name="Categories" xml:space="preserve"><value>Категории</value></data>
+  <data name="Suppliers" xml:space="preserve"><value>Доставчици</value></data>
+  <data name="Reports" xml:space="preserve"><value>Отчети</value></data>
+  <data name="Privacy" xml:space="preserve"><value>Поверителност</value></data>
+  <data name="Signed in as" xml:space="preserve"><value>Вписан(а) като</value></data>
+  <data name="Log Out" xml:space="preserve"><value>Изход</value></data>
+  <data name="Log In" xml:space="preserve"><value>Вход</value></data>
+
+  <!-- Dashboard -->
+  <data name="Dashboard" xml:space="preserve"><value>Табло</value></data>
+  <data name="Monthly Revenue" xml:space="preserve"><value>Месечен приход</value></data>
+  <data name="New Orders (Month)" xml:space="preserve"><value>Нови поръчки (месец)</value></data>
+  <data name="Active Customers" xml:space="preserve"><value>Активни клиенти</value></data>
+  <data name="Critical Stock" xml:space="preserve"><value>Критичен запас</value></data>
+  <data name="Monthly Sales Trends (Last 12 Months)" xml:space="preserve"><value>Тенденции в продажбите (последните 12 месеца)</value></data>
+  <data name="Top 5 Best-Selling Products" xml:space="preserve"><value>Топ 5 най-продавани продукта</value></data>
+  <data name="Low Stock Alerts" xml:space="preserve"><value>Сигнали за нисък запас</value></data>
+  <data name="No products are currently low on stock." xml:space="preserve"><value>В момента няма продукти с нисък наличен запас.</value></data>
+  <data name="SKU" xml:space="preserve"><value>Артикулен №</value></data>
+  <data name="Name" xml:space="preserve"><value>Име</value></data>
+  <data name="Category" xml:space="preserve"><value>Категория</value></data>
+  <data name="Quantity In Stock" xml:space="preserve"><value>Наличност</value></data>
+  <data name="Minimum Quantity" xml:space="preserve"><value>Минимално количество</value></data>
+  <data name="Revenue (€)" xml:space="preserve"><value>Приход (€)</value></data>
+  <data name="My Orders" xml:space="preserve"><value>Моите поръчки</value></data>
+
+  <!-- Privacy -->
+  <data name="Privacy Policy" xml:space="preserve"><value>Политика за поверителност</value></data>
+  <data name="Use this page to detail your site's privacy policy." xml:space="preserve"><value>Използвайте тази страница, за да опишете политиката за поверителност на сайта си.</value></data>
+
+  <!-- Products -->
+  <data name="Create New Product" xml:space="preserve"><value>Добави нов продукт</value></data>
+  <data name="Supplier" xml:space="preserve"><value>Доставчик</value></data>
+  <data name="Purchase Price" xml:space="preserve"><value>Доставна цена</value></data>
+  <data name="Sale Price" xml:space="preserve"><value>Продажна цена</value></data>
+  <data name="Low Stock" xml:space="preserve"><value>Нисък запас</value></data>
+  <data name="Edit" xml:space="preserve"><value>Редактирай</value></data>
+  <data name="Create Product" xml:space="preserve"><value>Добавяне на продукт</value></data>
+  <data name="Edit Product" xml:space="preserve"><value>Редактиране на продукт</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="Select Category" xml:space="preserve"><value>Избери категория</value></data>
+  <data name="Select Supplier" xml:space="preserve"><value>Избери доставчик</value></data>
+  <data name="Active" xml:space="preserve"><value>Активен</value></data>
+  <data name="Save" xml:space="preserve"><value>Запази</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отказ</value></data>
+
+  <!-- Customers -->
+  <data name="Create New Customer" xml:space="preserve"><value>Добави нов клиент</value></data>
+  <data name="Company" xml:space="preserve"><value>Фирма</value></data>
+  <data name="Phone" xml:space="preserve"><value>Телефон</value></data>
+  <data name="Email" xml:space="preserve"><value>Имейл</value></data>
+  <data name="Address" xml:space="preserve"><value>Адрес</value></data>
+  <data name="Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="Inactive" xml:space="preserve"><value>Неактивен</value></data>
+  <data name="Delete" xml:space="preserve"><value>Изтрий</value></data>
+  <data name="Create Customer" xml:space="preserve"><value>Добавяне на клиент</value></data>
+  <data name="Edit Customer" xml:space="preserve"><value>Редактиране на клиент</value></data>
+  <data name="Delete Customer" xml:space="preserve"><value>Изтриване на клиент</value></data>
+  <data name="Are you sure you want to delete this customer?" xml:space="preserve"><value>Сигурни ли сте, че искате да изтриете този клиент?</value></data>
+  <data name="Company Name" xml:space="preserve"><value>Име на фирма</value></data>
+  <data name="Tax Number" xml:space="preserve"><value>Данъчен номер</value></data>
+
+  <!-- Suppliers -->
+  <data name="Create New Supplier" xml:space="preserve"><value>Добави нов доставчик</value></data>
+  <data name="Contact Person" xml:space="preserve"><value>Лице за контакт</value></data>
+  <data name="Create Supplier" xml:space="preserve"><value>Добавяне на доставчик</value></data>
+  <data name="Edit Supplier" xml:space="preserve"><value>Редактиране на доставчик</value></data>
+  <data name="Delete Supplier" xml:space="preserve"><value>Изтриване на доставчик</value></data>
+  <data name="Are you sure you want to delete this supplier?" xml:space="preserve"><value>Сигурни ли сте, че искате да изтриете този доставчик?</value></data>
+
+  <!-- Categories -->
+  <data name="Create New Category" xml:space="preserve"><value>Добави нова категория</value></data>
+  <data name="Create Category" xml:space="preserve"><value>Добавяне на категория</value></data>
+  <data name="Edit Category" xml:space="preserve"><value>Редактиране на категория</value></data>
+  <data name="Delete Category" xml:space="preserve"><value>Изтриване на категория</value></data>
+  <data name="Are you sure you want to delete this category?" xml:space="preserve"><value>Сигурни ли сте, че искате да изтриете тази категория?</value></data>
+
+  <!-- Orders -->
+  <data name="Pending" xml:space="preserve"><value>Изчаква се</value></data>
+  <data name="Processing" xml:space="preserve"><value>Обработва се</value></data>
+  <data name="Shipped" xml:space="preserve"><value>Изпратена</value></data>
+  <data name="Delivered" xml:space="preserve"><value>Доставена</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>Отказана</value></data>
+  <data name="Create New Order" xml:space="preserve"><value>Нова поръчка</value></data>
+  <data name="Order ID" xml:space="preserve"><value>Номер на поръчка</value></data>
+  <data name="Customer" xml:space="preserve"><value>Клиент</value></data>
+  <data name="Order Date" xml:space="preserve"><value>Дата на поръчка</value></data>
+  <data name="Total Amount" xml:space="preserve"><value>Обща сума</value></data>
+  <data name="Create Order" xml:space="preserve"><value>Създаване на поръчка</value></data>
+  <data name="Select Customer" xml:space="preserve"><value>Избери клиент</value></data>
+  <data name="Created By" xml:space="preserve"><value>Създадена от</value></data>
+  <data name="Select User" xml:space="preserve"><value>Избери потребител</value></data>
+  <data name="Order Items" xml:space="preserve"><value>Артикули в поръчката</value></data>
+  <data name="Product" xml:space="preserve"><value>Продукт</value></data>
+  <data name="Select Product" xml:space="preserve"><value>Избери продукт</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="Add Item" xml:space="preserve"><value>Добави артикул</value></data>
+  <data name="Unit Price" xml:space="preserve"><value>Единична цена</value></data>
+  <data name="Line Total" xml:space="preserve"><value>Сума</value></data>
+  <data name="Please select a product." xml:space="preserve"><value>Моля, изберете продукт.</value></data>
+  <data name="Quantity must be a positive whole number." xml:space="preserve"><value>Количеството трябва да е положително цяло число.</value></data>
+  <data name="Remove" xml:space="preserve"><value>Премахни</value></data>
+  <data name="Please add at least one order item before submitting." xml:space="preserve"><value>Моля, добавете поне един артикул преди изпращане.</value></data>
+
+  <!-- Reports -->
+  <data name="Daily" xml:space="preserve"><value>Дневно</value></data>
+  <data name="Monthly" xml:space="preserve"><value>Месечно</value></data>
+  <data name="Sales Reports" xml:space="preserve"><value>Отчети за продажби</value></data>
+  <data name="Start Date" xml:space="preserve"><value>Начална дата</value></data>
+  <data name="End Date" xml:space="preserve"><value>Крайна дата</value></data>
+  <data name="Group By" xml:space="preserve"><value>Групиране по</value></data>
+  <data name="Filter" xml:space="preserve"><value>Филтрирай</value></data>
+  <data name="Clear" xml:space="preserve"><value>Изчисти</value></data>
+  <data name="Sales by Period" xml:space="preserve"><value>Продажби по период</value></data>
+  <data name="No sales found for the selected range." xml:space="preserve"><value>Няма намерени продажби за избрания период.</value></data>
+  <data name="Period" xml:space="preserve"><value>Период</value></data>
+  <data name="Order Count" xml:space="preserve"><value>Брой поръчки</value></data>
+  <data name="Total Revenue" xml:space="preserve"><value>Общ приход</value></data>
+  <data name="Total" xml:space="preserve"><value>Общо</value></data>
+  <data name="Sales by Category" xml:space="preserve"><value>Продажби по категория</value></data>
+  <data name="Quantity Sold" xml:space="preserve"><value>Продадено количество</value></data>
+
+  <!-- Account -->
+  <data name="Username" xml:space="preserve"><value>Потребителско име</value></data>
+  <data name="Password" xml:space="preserve"><value>Парола</value></data>
+  <data name="Remember me" xml:space="preserve"><value>Запомни ме</value></data>
+  <data name="Access Denied" xml:space="preserve"><value>Отказан достъп</value></data>
+  <data name="You do not have permission to view this page." xml:space="preserve"><value>Нямате права за достъп до тази страница.</value></data>
+  <data name="Back to Home" xml:space="preserve"><value>Обратно към началото</value></data>
+  <data name="Invalid username or password." xml:space="preserve"><value>Невалидно потребителско име или парола.</value></data>
+
+  <!-- Error page -->
+  <data name="Error" xml:space="preserve"><value>Грешка</value></data>
+  <data name="Error." xml:space="preserve"><value>Грешка.</value></data>
+  <data name="An error occurred while processing your request." xml:space="preserve"><value>Възникна грешка при обработката на заявката ви.</value></data>
+  <data name="Request ID:" xml:space="preserve"><value>Идентификатор на заявката:</value></data>
+  <data name="Development Mode" xml:space="preserve"><value>Режим за разработка</value></data>
+  <data name="Swapping to the Development environment will display more detailed information about the error that occurred." xml:space="preserve"><value>Превключването към среда за разработка ще покаже по-подробна информация за възникналата грешка.</value></data>
+  <data name="The Development environment shouldn't be enabled for deployed applications." xml:space="preserve"><value>Средата за разработка не трябва да бъде активирана за публикувани приложения.</value></data>
+  <data name="It can result in displaying sensitive information from exceptions to end users. For local debugging, enable the Development environment by setting the ASPNETCORE_ENVIRONMENT environment variable to Development and restarting the app." xml:space="preserve"><value>Това може да доведе до показване на чувствителна информация от изключения на крайните потребители. За локално отстраняване на грешки активирайте средата за разработка, като зададете променливата на средата ASPNETCORE_ENVIRONMENT на Development и рестартирате приложението.</value></data>
+
+  <!-- Controller success / error messages (with {0} placeholders) -->
+  <data name="Product &quot;{0}&quot; was created successfully." xml:space="preserve"><value>Продукт „{0}“ беше създаден успешно.</value></data>
+  <data name="Product &quot;{0}&quot; was updated successfully." xml:space="preserve"><value>Продукт „{0}“ беше обновен успешно.</value></data>
+  <data name="Customer &quot;{0}&quot; was created successfully." xml:space="preserve"><value>Клиент „{0}“ беше създаден успешно.</value></data>
+  <data name="Customer &quot;{0}&quot; was updated successfully." xml:space="preserve"><value>Клиент „{0}“ беше обновен успешно.</value></data>
+  <data name="This customer cannot be deleted because it has existing orders on record." xml:space="preserve"><value>Този клиент не може да бъде изтрит, защото има регистрирани поръчки.</value></data>
+  <data name="Customer was deleted successfully." xml:space="preserve"><value>Клиентът беше изтрит успешно.</value></data>
+  <data name="Supplier &quot;{0}&quot; was created successfully." xml:space="preserve"><value>Доставчик „{0}“ беше създаден успешно.</value></data>
+  <data name="Supplier &quot;{0}&quot; was updated successfully." xml:space="preserve"><value>Доставчик „{0}“ беше обновен успешно.</value></data>
+  <data name="This supplier cannot be deleted because it is assigned to one or more products." xml:space="preserve"><value>Този доставчик не може да бъде изтрит, защото е свързан с един или повече продукти.</value></data>
+  <data name="Supplier was deleted successfully." xml:space="preserve"><value>Доставчикът беше изтрит успешно.</value></data>
+  <data name="Category &quot;{0}&quot; was created successfully." xml:space="preserve"><value>Категория „{0}“ беше създадена успешно.</value></data>
+  <data name="Category &quot;{0}&quot; was updated successfully." xml:space="preserve"><value>Категория „{0}“ беше обновена успешно.</value></data>
+  <data name="This category cannot be deleted because it is assigned to one or more products." xml:space="preserve"><value>Тази категория не може да бъде изтрита, защото е свързана с един или повече продукти.</value></data>
+  <data name="Category was deleted successfully." xml:space="preserve"><value>Категорията беше изтрита успешно.</value></data>
+  <data name="An order must contain at least one item." xml:space="preserve"><value>Поръчката трябва да съдържа поне един артикул.</value></data>
+  <data name="All order items must have a valid product and a positive quantity." xml:space="preserve"><value>Всички артикули в поръчката трябва да имат валиден продукт и положително количество.</value></data>
+  <data name="Order &quot;{0}&quot; was created successfully." xml:space="preserve"><value>Поръчка „{0}“ беше създадена успешно.</value></data>
+
+  <!-- Validation messages -->
+  <data name="Product name is required." xml:space="preserve"><value>Името на продукта е задължително.</value></data>
+  <data name="Product name cannot exceed 150 characters." xml:space="preserve"><value>Името на продукта не може да надвишава 150 символа.</value></data>
+  <data name="Description cannot exceed 1000 characters." xml:space="preserve"><value>Описанието не може да надвишава 1000 символа.</value></data>
+  <data name="SKU is required." xml:space="preserve"><value>Артикулният номер е задължителен.</value></data>
+  <data name="SKU cannot exceed 50 characters." xml:space="preserve"><value>Артикулният номер не може да надвишава 50 символа.</value></data>
+  <data name="Purchase price must be zero or greater." xml:space="preserve"><value>Доставната цена трябва да е нула или по-голяма.</value></data>
+  <data name="Sale price must be zero or greater." xml:space="preserve"><value>Продажната цена трябва да е нула или по-голяма.</value></data>
+  <data name="Quantity in stock must be zero or greater." xml:space="preserve"><value>Наличното количество трябва да е нула или по-голямо.</value></data>
+  <data name="Minimum quantity must be zero or greater." xml:space="preserve"><value>Минималното количество трябва да е нула или по-голямо.</value></data>
+  <data name="Please select a category." xml:space="preserve"><value>Моля, изберете категория.</value></data>
+  <data name="Customer name is required." xml:space="preserve"><value>Името на клиента е задължително.</value></data>
+  <data name="Customer name cannot exceed 150 characters." xml:space="preserve"><value>Името на клиента не може да надвишава 150 символа.</value></data>
+  <data name="Company name cannot exceed 150 characters." xml:space="preserve"><value>Името на фирмата не може да надвишава 150 символа.</value></data>
+  <data name="Tax number is required." xml:space="preserve"><value>Данъчният номер е задължителен.</value></data>
+  <data name="Tax number cannot exceed 50 characters." xml:space="preserve"><value>Данъчният номер не може да надвишава 50 символа.</value></data>
+  <data name="Email cannot exceed 150 characters." xml:space="preserve"><value>Имейлът не може да надвишава 150 символа.</value></data>
+  <data name="Please enter a valid email address." xml:space="preserve"><value>Моля, въведете валиден имейл адрес.</value></data>
+  <data name="Phone cannot exceed 30 characters." xml:space="preserve"><value>Телефонният номер не може да надвишава 30 символа.</value></data>
+  <data name="Please enter a valid phone number." xml:space="preserve"><value>Моля, въведете валиден телефонен номер.</value></data>
+  <data name="Address cannot exceed 250 characters." xml:space="preserve"><value>Адресът не може да надвишава 250 символа.</value></data>
+  <data name="Supplier name is required." xml:space="preserve"><value>Името на доставчика е задължително.</value></data>
+  <data name="Supplier name cannot exceed 150 characters." xml:space="preserve"><value>Името на доставчика не може да надвишава 150 символа.</value></data>
+  <data name="Contact person cannot exceed 150 characters." xml:space="preserve"><value>Лицето за контакт не може да надвишава 150 символа.</value></data>
+  <data name="Category name is required." xml:space="preserve"><value>Името на категорията е задължително.</value></data>
+  <data name="Category name cannot exceed 100 characters." xml:space="preserve"><value>Името на категорията не може да надвишава 100 символа.</value></data>
+  <data name="Description cannot exceed 500 characters." xml:space="preserve"><value>Описанието не може да надвишава 500 символа.</value></data>
+  <data name="Please select a customer." xml:space="preserve"><value>Моля, изберете клиент.</value></data>
+  <data name="Please select who is creating this order." xml:space="preserve"><value>Моля, изберете кой създава поръчката.</value></data>
+  <data name="Please select a valid product." xml:space="preserve"><value>Моля, изберете валиден продукт.</value></data>
+  <data name="Unit price must be zero or greater." xml:space="preserve"><value>Единичната цена трябва да е нула или по-голяма.</value></data>
+  <data name="Username is required." xml:space="preserve"><value>Потребителското име е задължително.</value></data>
+  <data name="Password is required." xml:space="preserve"><value>Паролата е задължителна.</value></data>
+</root>

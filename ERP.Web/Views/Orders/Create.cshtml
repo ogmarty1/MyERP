@@ -1,26 +1,26 @@
 @model ERP.Web.Models.OrderFormViewModel
 
 @{
-    ViewData["Title"] = "Create Order";
+    ViewData["Title"] = Localizer["Create Order"];
 }
 
-<h1>Create Order</h1>
+<h1>@Localizer["Create Order"]</h1>
 
 <form id="orderForm" asp-action="Create" method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label asp-for="CustomerId" class="form-label"></label>
+            <label asp-for="CustomerId" class="form-label">@Localizer["Customer"]</label>
             <select asp-for="CustomerId" class="form-select" asp-items="Model.Customers">
-                <option value="">-- Select Customer --</option>
+                <option value="">-- @Localizer["Select Customer"] --</option>
             </select>
             <span asp-validation-for="CustomerId" class="text-danger"></span>
         </div>
         <div class="col-md-6 mb-3">
-            <label asp-for="UserId" class="form-label"></label>
+            <label asp-for="UserId" class="form-label">@Localizer["Created By"]</label>
             <select asp-for="UserId" class="form-select" asp-items="Model.Users">
-                <option value="">-- Select User --</option>
+                <option value="">-- @Localizer["Select User"] --</option>
             </select>
             <span asp-validation-for="UserId" class="text-danger"></span>
         </div>
@@ -28,27 +28,27 @@
 
     <hr />
 
-    <h4>Order Items</h4>
+    <h4>@Localizer["Order Items"]</h4>
 
     <div class="row align-items-end mb-2">
         <div class="col-md-6">
-            <label for="productSelect" class="form-label">Product</label>
+            <label for="productSelect" class="form-label">@Localizer["Product"]</label>
             <select id="productSelect" class="form-select">
-                <option value="">-- Select Product --</option>
+                <option value="">-- @Localizer["Select Product"] --</option>
                 @foreach (var product in Model.ProductCatalog)
                 {
                     <option value="@product.Id" data-name="@product.Name" data-price="@product.SalePrice.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)">
-                        @product.Name (@product.SalePrice.ToString("C"))
+                        @product.Name (@product.SalePrice.ToEuro())
                     </option>
                 }
             </select>
         </div>
         <div class="col-md-3">
-            <label for="quantityInput" class="form-label">Quantity</label>
+            <label for="quantityInput" class="form-label">@Localizer["Quantity"]</label>
             <input type="number" id="quantityInput" class="form-control" min="1" step="1" />
         </div>
         <div class="col-md-3">
-            <button type="button" id="addItemBtn" class="btn btn-outline-primary w-100">Add Item</button>
+            <button type="button" id="addItemBtn" class="btn btn-outline-primary w-100">@Localizer["Add Item"]</button>
         </div>
     </div>
 
@@ -57,10 +57,10 @@
     <table class="table table-bordered">
         <thead class="table-light">
             <tr>
-                <th>Product</th>
-                <th>Quantity</th>
-                <th>Unit Price</th>
-                <th>Line Total</th>
+                <th>@Localizer["Product"]</th>
+                <th>@Localizer["Quantity"]</th>
+                <th>@Localizer["Unit Price"]</th>
+                <th>@Localizer["Line Total"]</th>
                 <th></th>
             </tr>
         </thead>
@@ -68,27 +68,40 @@
         </tbody>
         <tfoot>
             <tr>
-                <th colspan="3" class="text-end">Total Amount</th>
-                <th id="totalAmount">$0.00</th>
+                <th colspan="3" class="text-end">@Localizer["Total Amount"]</th>
+                <th id="totalAmount">0,00 €</th>
                 <th></th>
             </tr>
         </tfoot>
     </table>
 
-    <button type="submit" class="btn btn-primary">Create Order</button>
-    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary">@Localizer["Create Order"]</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">@Localizer["Cancel"]</a>
 </form>
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
     <script>
+        const orderI18n = {
+            selectProduct: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Localizer["Please select a product."].Value)),
+            quantityPositive: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Localizer["Quantity must be a positive whole number."].Value)),
+            remove: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Localizer["Remove"].Value)),
+            addAtLeastOneItem: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Localizer["Please add at least one order item before submitting."].Value))
+        };
+
+        function formatEuro(value) {
+            var parts = value.toFixed(2).split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+            return parts.join(',') + ' €';
+        }
+
         $(function () {
             function recalcTotal() {
                 var total = 0;
                 $('#itemsBody tr').each(function () {
                     total += parseFloat($(this).data('linetotal'));
                 });
-                $('#totalAmount').text('$' + total.toFixed(2));
+                $('#totalAmount').text(formatEuro(total));
             }
 
             function reindexRows() {
@@ -110,11 +123,11 @@
                 $('#itemError').addClass('d-none').text('');
 
                 if (!productId) {
-                    $('#itemError').removeClass('d-none').text('Please select a product.');
+                    $('#itemError').removeClass('d-none').text(orderI18n.selectProduct);
                     return;
                 }
                 if (!quantity || quantity <= 0) {
-                    $('#itemError').removeClass('d-none').text('Quantity must be a positive whole number.');
+                    $('#itemError').removeClass('d-none').text(orderI18n.quantityPositive);
                     return;
                 }
 
@@ -127,11 +140,11 @@
                     .append($('<input type="hidden">').attr('name', 'Lines[' + index + '].ProductId').val(productId)));
                 row.append($('<td>').text(quantity)
                     .append($('<input type="hidden">').attr('name', 'Lines[' + index + '].Quantity').val(quantity)));
-                row.append($('<td>').text('$' + price.toFixed(2))
+                row.append($('<td>').text(formatEuro(price))
                     .append($('<input type="hidden">').attr('name', 'Lines[' + index + '].UnitPrice').val(price.toFixed(2))));
-                row.append($('<td>').text('$' + lineTotal.toFixed(2)));
+                row.append($('<td>').text(formatEuro(lineTotal)));
                 row.append($('<td>').append(
-                    $('<button type="button" class="btn btn-sm btn-outline-danger remove-item">Remove</button>')
+                    $('<button type="button" class="btn btn-sm btn-outline-danger remove-item">').text(orderI18n.remove)
                 ));
 
                 $('#itemsBody').append(row);
@@ -149,7 +162,7 @@
             $('#orderForm').on('submit', function (e) {
                 if ($('#itemsBody tr').length === 0) {
                     e.preventDefault();
-                    $('#itemError').removeClass('d-none').text('Please add at least one order item before submitting.');
+                    $('#itemError').removeClass('d-none').text(orderI18n.addAtLeastOneItem);
                 }
             });
         });

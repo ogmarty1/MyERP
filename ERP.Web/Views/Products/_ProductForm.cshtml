@@ -4,35 +4,35 @@
 
 <div class="row">
     <div class="col-md-6 mb-3">
-        <label asp-for="Name" class="form-label"></label>
+        <label asp-for="Name" class="form-label">@Localizer["Name"]</label>
         <input asp-for="Name" class="form-control" />
         <span asp-validation-for="Name" class="text-danger"></span>
     </div>
     <div class="col-md-6 mb-3">
-        <label asp-for="SKU" class="form-label"></label>
+        <label asp-for="SKU" class="form-label">@Localizer["SKU"]</label>
         <input asp-for="SKU" class="form-control" />
         <span asp-validation-for="SKU" class="text-danger"></span>
     </div>
 </div>
 
 <div class="mb-3">
-    <label asp-for="Description" class="form-label"></label>
+    <label asp-for="Description" class="form-label">@Localizer["Description"]</label>
     <textarea asp-for="Description" class="form-control" rows="3"></textarea>
     <span asp-validation-for="Description" class="text-danger"></span>
 </div>
 
 <div class="row">
     <div class="col-md-6 mb-3">
-        <label asp-for="CategoryId" class="form-label"></label>
+        <label asp-for="CategoryId" class="form-label">@Localizer["Category"]</label>
         <select asp-for="CategoryId" class="form-select" asp-items="Model.Categories">
-            <option value="">-- Select Category --</option>
+            <option value="">-- @Localizer["Select Category"] --</option>
         </select>
         <span asp-validation-for="CategoryId" class="text-danger"></span>
     </div>
     <div class="col-md-6 mb-3">
-        <label asp-for="SupplierId" class="form-label"></label>
+        <label asp-for="SupplierId" class="form-label">@Localizer["Supplier"]</label>
         <select asp-for="SupplierId" class="form-select" asp-items="Model.Suppliers">
-            <option value="">-- Select Supplier --</option>
+            <option value="">-- @Localizer["Select Supplier"] --</option>
         </select>
         <span asp-validation-for="SupplierId" class="text-danger"></span>
     </div>
@@ -40,12 +40,12 @@
 
 <div class="row">
     <div class="col-md-6 mb-3">
-        <label asp-for="PurchasePrice" class="form-label"></label>
+        <label asp-for="PurchasePrice" class="form-label">@Localizer["Purchase Price"]</label>
         <input asp-for="PurchasePrice" class="form-control" type="number" step="0.01" />
         <span asp-validation-for="PurchasePrice" class="text-danger"></span>
     </div>
     <div class="col-md-6 mb-3">
-        <label asp-for="SalePrice" class="form-label"></label>
+        <label asp-for="SalePrice" class="form-label">@Localizer["Sale Price"]</label>
         <input asp-for="SalePrice" class="form-control" type="number" step="0.01" />
         <span asp-validation-for="SalePrice" class="text-danger"></span>
     </div>
@@ -53,12 +53,12 @@
 
 <div class="row">
     <div class="col-md-6 mb-3">
-        <label asp-for="QuantityInStock" class="form-label"></label>
+        <label asp-for="QuantityInStock" class="form-label">@Localizer["Quantity In Stock"]</label>
         <input asp-for="QuantityInStock" class="form-control" type="number" step="1" />
         <span asp-validation-for="QuantityInStock" class="text-danger"></span>
     </div>
     <div class="col-md-6 mb-3">
-        <label asp-for="MinimumQuantity" class="form-label"></label>
+        <label asp-for="MinimumQuantity" class="form-label">@Localizer["Minimum Quantity"]</label>
         <input asp-for="MinimumQuantity" class="form-control" type="number" step="1" />
         <span asp-validation-for="MinimumQuantity" class="text-danger"></span>
     </div>
@@ -66,8 +66,8 @@
 
 <div class="form-check mb-3">
     <input asp-for="IsActive" class="form-check-input" />
-    <label asp-for="IsActive" class="form-check-label"></label>
+    <label asp-for="IsActive" class="form-check-label">@Localizer["Active"]</label>
 </div>
 
-<button type="submit" class="btn btn-primary">Save</button>
-<a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+<button type="submit" class="btn btn-primary">@Localizer["Save"]</button>
+<a asp-action="Index" class="btn btn-outline-secondary">@Localizer["Cancel"]</a>

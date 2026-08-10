@@ -2,7 +2,7 @@
 @using ERP.DataAccess.Models
 
 @{
-    ViewData["Title"] = "Orders";
+    ViewData["Title"] = Localizer["Orders"];
 
     string BadgeClass(OrderStatus status) => status switch
     {
@@ -13,21 +13,31 @@
         OrderStatus.Cancelled => "bg-danger",
         _ => "bg-secondary"
     };
+
+    string StatusText(OrderStatus status) => status switch
+    {
+        OrderStatus.Pending => Localizer["Pending"],
+        OrderStatus.Processing => Localizer["Processing"],
+        OrderStatus.Shipped => Localizer["Shipped"],
+        OrderStatus.Delivered => Localizer["Delivered"],
+        OrderStatus.Cancelled => Localizer["Cancelled"],
+        _ => status.ToString()
+    };
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1>Orders</h1>
-    <a asp-action="Create" class="btn btn-primary">Create New Order</a>
+    <h1>@Localizer["Orders"]</h1>
+    <a asp-action="Create" class="btn btn-primary">@Localizer["Create New Order"]</a>
 </div>
 
 <table class="table table-striped table-bordered align-middle">
     <thead class="table-light">
         <tr>
-            <th>Order ID</th>
-            <th>Customer</th>
-            <th>Order Date</th>
-            <th>Total Amount</th>
-            <th>Status</th>
+            <th>@Localizer["Order ID"]</th>
+            <th>@Localizer["Customer"]</th>
+            <th>@Localizer["Order Date"]</th>
+            <th>@Localizer["Total Amount"]</th>
+            <th>@Localizer["Status"]</th>
         </tr>
     </thead>
     <tbody>
@@ -37,8 +47,8 @@
                 <td>@order.Id</td>
                 <td>@order.Customer.Name</td>
                 <td>@order.OrderDate.ToLocalTime().ToString("g")</td>
-                <td>@order.TotalAmount.ToString("C")</td>
-                <td><span class="badge @BadgeClass(order.Status)">@order.Status</span></td>
+                <td>@order.TotalAmount.ToEuro()</td>
+                <td><span class="badge @BadgeClass(order.Status)">@StatusText(order.Status)</span></td>
             </tr>
         }
     </tbody>

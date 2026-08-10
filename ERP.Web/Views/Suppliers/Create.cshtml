@@ -1,10 +1,10 @@
 @model ERP.Web.Models.SupplierFormViewModel
 
 @{
-    ViewData["Title"] = "Create Supplier";
+    ViewData["Title"] = Localizer["Create Supplier"];
 }
 
-<h1>Create Supplier</h1>
+<h1>@Localizer["Create Supplier"]</h1>
 
 <form asp-action="Create" method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>

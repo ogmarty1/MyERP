@@ -1,9 +1,9 @@
 @{
-    ViewData["Title"] = "Access Denied";
+    ViewData["Title"] = Localizer["Access Denied"];
 }
 
 <div class="text-center">
-    <h1 class="display-5 text-danger">Access Denied</h1>
-    <p class="lead">You do not have permission to view this page.</p>
-    <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Back to Home</a>
+    <h1 class="display-5 text-danger">@Localizer["Access Denied"]</h1>
+    <p class="lead">@Localizer["You do not have permission to view this page."]</p>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-primary">@Localizer["Back to Home"]</a>
 </div>

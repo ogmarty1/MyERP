@@ -4,12 +4,12 @@
 
 <div class="row">
     <div class="col-md-6 mb-3">
-        <label asp-for="Name" class="form-label"></label>
+        <label asp-for="Name" class="form-label">@Localizer["Name"]</label>
         <input asp-for="Name" class="form-control" />
         <span asp-validation-for="Name" class="text-danger"></span>
     </div>
     <div class="col-md-6 mb-3">
-        <label asp-for="CompanyName" class="form-label"></label>
+        <label asp-for="CompanyName" class="form-label">@Localizer["Company Name"]</label>
         <input asp-for="CompanyName" class="form-control" />
         <span asp-validation-for="CompanyName" class="text-danger"></span>
     </div>
@@ -17,12 +17,12 @@
 
 <div class="row">
     <div class="col-md-6 mb-3">
-        <label asp-for="ContactPerson" class="form-label"></label>
+        <label asp-for="ContactPerson" class="form-label">@Localizer["Contact Person"]</label>
         <input asp-for="ContactPerson" class="form-control" />
         <span asp-validation-for="ContactPerson" class="text-danger"></span>
     </div>
     <div class="col-md-6 mb-3">
-        <label asp-for="TaxNumber" class="form-label"></label>
+        <label asp-for="TaxNumber" class="form-label">@Localizer["Tax Number"]</label>
         <input asp-for="TaxNumber" class="form-control" />
         <span asp-validation-for="TaxNumber" class="text-danger"></span>
     </div>
@@ -30,12 +30,12 @@
 
 <div class="row">
     <div class="col-md-6 mb-3">
-        <label asp-for="Phone" class="form-label"></label>
+        <label asp-for="Phone" class="form-label">@Localizer["Phone"]</label>
         <input asp-for="Phone" class="form-control" />
         <span asp-validation-for="Phone" class="text-danger"></span>
     </div>
     <div class="col-md-6 mb-3">
-        <label asp-for="Email" class="form-label"></label>
+        <label asp-for="Email" class="form-label">@Localizer["Email"]</label>
         <input asp-for="Email" class="form-control" />
         <span asp-validation-for="Email" class="text-danger"></span>
     </div>
@@ -43,8 +43,8 @@
 
 <div class="form-check mb-3">
     <input asp-for="IsActive" class="form-check-input" />
-    <label asp-for="IsActive" class="form-check-label"></label>
+    <label asp-for="IsActive" class="form-check-label">@Localizer["Active"]</label>
 </div>
 
-<button type="submit" class="btn btn-primary">Save</button>
-<a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+<button type="submit" class="btn btn-primary">@Localizer["Save"]</button>
+<a asp-action="Index" class="btn btn-outline-secondary">@Localizer["Cancel"]</a>

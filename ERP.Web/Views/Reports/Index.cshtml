@@ -1,48 +1,55 @@
 @model ERP.Web.Models.ReportsViewModel
 @using ERP.BusinessLogic.DTOs
+@using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
-    ViewData["Title"] = "Reports";
+    ViewData["Title"] = Localizer["Reports"];
+
+    var groupingOptions = new List<SelectListItem>
+    {
+        new(Localizer["Daily"], ReportPeriodGrouping.Daily.ToString(), Model.Filter.Grouping == ReportPeriodGrouping.Daily),
+        new(Localizer["Monthly"], ReportPeriodGrouping.Monthly.ToString(), Model.Filter.Grouping == ReportPeriodGrouping.Monthly)
+    };
 }
 
-<h1 class="mb-4">Sales Reports</h1>
+<h1 class="mb-4">@Localizer["Sales Reports"]</h1>
 
 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
 <form asp-action="Index" method="get" class="row g-3 align-items-end mb-4">
     <div class="col-auto">
-        <label asp-for="Filter.StartDate" class="form-label"></label>
+        <label asp-for="Filter.StartDate" class="form-label">@Localizer["Start Date"]</label>
         <input asp-for="Filter.StartDate" class="form-control" />
     </div>
     <div class="col-auto">
-        <label asp-for="Filter.EndDate" class="form-label"></label>
+        <label asp-for="Filter.EndDate" class="form-label">@Localizer["End Date"]</label>
         <input asp-for="Filter.EndDate" class="form-control" />
     </div>
     <div class="col-auto">
-        <label asp-for="Filter.Grouping" class="form-label"></label>
-        <select asp-for="Filter.Grouping" asp-items="Html.GetEnumSelectList<ReportPeriodGrouping>()" class="form-select"></select>
+        <label asp-for="Filter.Grouping" class="form-label">@Localizer["Group By"]</label>
+        <select asp-for="Filter.Grouping" asp-items="groupingOptions" class="form-select"></select>
     </div>
     <div class="col-auto">
-        <button type="submit" class="btn btn-primary">Filter</button>
-        <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        <button type="submit" class="btn btn-primary">@Localizer["Filter"]</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">@Localizer["Clear"]</a>
     </div>
 </form>
 
 <div class="row">
     <div class="col-lg-6 mb-4">
-        <h4 class="mb-3">Sales by Period</h4>
+        <h4 class="mb-3">@Localizer["Sales by Period"]</h4>
         @if (Model.SalesByPeriod.Count == 0)
         {
-            <p class="text-muted">No sales found for the selected range.</p>
+            <p class="text-muted">@Localizer["No sales found for the selected range."]</p>
         }
         else
         {
             <table class="table table-striped table-bordered align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>Period</th>
-                        <th>Order Count</th>
-                        <th>Total Revenue</th>
+                        <th>@Localizer["Period"]</th>
+                        <th>@Localizer["Order Count"]</th>
+                        <th>@Localizer["Total Revenue"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -51,15 +58,15 @@
                         <tr>
                             <td>@item.PeriodLabel</td>
                             <td>@item.OrderCount</td>
-                            <td>@item.TotalRevenue.ToString("C")</td>
+                            <td>@item.TotalRevenue.ToEuro()</td>
                         </tr>
                     }
                 </tbody>
                 <tfoot>
                     <tr class="table-light fw-bold">
-                        <td>Total</td>
+                        <td>@Localizer["Total"]</td>
                         <td>@Model.SalesByPeriod.Sum(i => i.OrderCount)</td>
-                        <td>@Model.SalesByPeriod.Sum(i => i.TotalRevenue).ToString("C")</td>
+                        <td>@Model.SalesByPeriod.Sum(i => i.TotalRevenue).ToEuro()</td>
                     </tr>
                 </tfoot>
             </table>
@@ -67,19 +74,19 @@
     </div>
 
     <div class="col-lg-6 mb-4">
-        <h4 class="mb-3">Sales by Category</h4>
+        <h4 class="mb-3">@Localizer["Sales by Category"]</h4>
         @if (Model.SalesByCategory.Count == 0)
         {
-            <p class="text-muted">No sales found for the selected range.</p>
+            <p class="text-muted">@Localizer["No sales found for the selected range."]</p>
         }
         else
         {
             <table class="table table-striped table-bordered align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>Category</th>
-                        <th>Quantity Sold</th>
-                        <th>Total Revenue</th>
+                        <th>@Localizer["Category"]</th>
+                        <th>@Localizer["Quantity Sold"]</th>
+                        <th>@Localizer["Total Revenue"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -88,15 +95,15 @@
                         <tr>
                             <td>@item.CategoryName</td>
                             <td>@item.QuantitySold</td>
-                            <td>@item.TotalRevenue.ToString("C")</td>
+                            <td>@item.TotalRevenue.ToEuro()</td>
                         </tr>
                     }
                 </tbody>
                 <tfoot>
                     <tr class="table-light fw-bold">
-                        <td>Total</td>
+                        <td>@Localizer["Total"]</td>
                         <td>@Model.SalesByCategory.Sum(i => i.QuantitySold)</td>
-                        <td>@Model.SalesByCategory.Sum(i => i.TotalRevenue).ToString("C")</td>
+                        <td>@Model.SalesByCategory.Sum(i => i.TotalRevenue).ToEuro()</td>
                     </tr>
                 </tfoot>
             </table>

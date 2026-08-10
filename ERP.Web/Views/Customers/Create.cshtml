@@ -1,10 +1,10 @@
 @model ERP.Web.Models.CustomerFormViewModel
 
 @{
-    ViewData["Title"] = "Create Customer";
+    ViewData["Title"] = Localizer["Create Customer"];
 }
 
-<h1>Create Customer</h1>
+<h1>@Localizer["Create Customer"]</h1>
 
 <form asp-action="Create" method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>

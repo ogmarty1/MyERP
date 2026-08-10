@@ -12,7 +12,7 @@
     }
 </div>
 
-<table class="table table-striped table-bordered align-middle">
+<table id="customersTable" class="table table-striped table-hover table-bordered align-middle w-100">
     <thead class="table-light">
         <tr>
             <th>@Localizer["Name"]</th>
@@ -46,11 +46,28 @@
                 <td>
                     @if (User.IsInRole("Manager") || User.IsInRole("Admin"))
                     {
-                        <a asp-action="Edit" asp-route-id="@customer.Id" class="btn btn-sm btn-outline-secondary">@Localizer["Edit"]</a>
-                        <a asp-action="Delete" asp-route-id="@customer.Id" class="btn btn-sm btn-outline-danger">@Localizer["Delete"]</a>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a asp-action="Edit" asp-route-id="@customer.Id" class="btn btn-outline-secondary" title="@Localizer["Edit"]">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@customer.Id" class="btn btn-outline-danger" title="@Localizer["Delete"]">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
                     }
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('#customersTable').DataTable({
+                language: window.dataTableLanguage,
+                columnDefs: [{ orderable: false, targets: -1 }]
+            });
+        });
+    </script>
+}

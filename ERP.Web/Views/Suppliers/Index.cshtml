@@ -9,7 +9,7 @@
     <a asp-action="Create" class="btn btn-primary">@Localizer["Create New Supplier"]</a>
 </div>
 
-<table class="table table-striped table-bordered align-middle">
+<table id="suppliersTable" class="table table-striped table-hover table-bordered align-middle w-100">
     <thead class="table-light">
         <tr>
             <th>@Localizer["Name"]</th>
@@ -43,10 +43,27 @@
                     }
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@supplier.Id" class="btn btn-sm btn-outline-secondary">@Localizer["Edit"]</a>
-                    <a asp-action="Delete" asp-route-id="@supplier.Id" class="btn btn-sm btn-outline-danger">@Localizer["Delete"]</a>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <a asp-action="Edit" asp-route-id="@supplier.Id" class="btn btn-outline-secondary" title="@Localizer["Edit"]">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@supplier.Id" class="btn btn-outline-danger" title="@Localizer["Delete"]">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('#suppliersTable').DataTable({
+                language: window.dataTableLanguage,
+                columnDefs: [{ orderable: false, targets: -1 }]
+            });
+        });
+    </script>
+}

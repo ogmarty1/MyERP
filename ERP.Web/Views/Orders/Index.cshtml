@@ -30,7 +30,7 @@
     <a asp-action="Create" class="btn btn-primary">@Localizer["Create New Order"]</a>
 </div>
 
-<table class="table table-striped table-bordered align-middle">
+<table id="ordersTable" class="table table-striped table-hover table-bordered align-middle w-100">
     <thead class="table-light">
         <tr>
             <th>@Localizer["Order ID"]</th>
@@ -46,10 +46,28 @@
             <tr>
                 <td>@order.Id</td>
                 <td>@order.Customer.Name</td>
-                <td>@order.OrderDate.ToLocalTime().ToString("g")</td>
-                <td>@order.TotalAmount.ToEuro()</td>
+                <td data-order="@order.OrderDate.ToString("o")">@order.OrderDate.ToLocalTime().ToString("g")</td>
+                <td data-order="@order.TotalAmount">@order.TotalAmount.ToEuro()</td>
                 <td><span class="badge @BadgeClass(order.Status)">@StatusText(order.Status)</span></td>
             </tr>
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $.fn.dataTable.Buttons.defaults.dom.button.className = 'btn btn-outline-secondary btn-sm me-1';
+            $('#ordersTable').DataTable({
+                language: window.dataTableLanguage,
+                order: [[0, 'desc']],
+                dom: 'Bfrtip',
+                buttons: [
+                    { extend: 'copyHtml5', text: '<i class="bi bi-clipboard"></i> ' + window.dataTableButtonLabels.copy },
+                    { extend: 'excelHtml5', text: '<i class="bi bi-file-earmark-excel"></i> ' + window.dataTableButtonLabels.excel },
+                    { extend: 'print', text: '<i class="bi bi-printer"></i> ' + window.dataTableButtonLabels.print }
+                ]
+            });
+        });
+    </script>
+}

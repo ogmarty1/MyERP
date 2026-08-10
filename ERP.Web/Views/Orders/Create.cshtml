@@ -163,7 +163,12 @@
                 if ($('#itemsBody tr').length === 0) {
                     e.preventDefault();
                     $('#itemError').removeClass('d-none').text(orderI18n.addAtLeastOneItem);
+                    return;
                 }
+
+                var $btn = $(this).find('button[type="submit"]').first();
+                $btn.prop('disabled', true);
+                $btn.prepend('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>');
             });
         });
     </script>

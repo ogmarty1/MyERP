@@ -9,5 +9,6 @@ namespace ERP.BusinessLogic.Services
         Task<Product?> GetByIdAsync(int id);
         Task<Product> CreateAsync(CreateProductRequest request);
         Task UpdateAsync(UpdateProductRequest request);
+        Task DeleteAsync(int id);
     }
 }

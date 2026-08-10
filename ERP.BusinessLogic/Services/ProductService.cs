@@ -71,5 +71,14 @@ namespace ERP.BusinessLogic.Services
 
             await _context.SaveChangesAsync();
         }
+
+        public async Task DeleteAsync(int id)
+        {
+            var product = await _context.Products.FindAsync(id)
+                ?? throw new InvalidOperationException($"Product with Id {id} was not found.");
+
+            _context.Products.Remove(product);
+            await _context.SaveChangesAsync();
+        }
     }
 }

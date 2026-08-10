@@ -1,7 +1,20 @@
 @using System.Globalization
+@using System.Security.Claims
 @{
     var currentLang = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
     var returnUrl = Context.Request.Path + Context.Request.QueryString;
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+
+    bool IsActiveNav(string controller, string action = "Index") =>
+        currentController.Equals(controller, StringComparison.OrdinalIgnoreCase) &&
+        currentAction.Equals(action, StringComparison.OrdinalIgnoreCase);
+    string NavClass(string controller, string action = "Index") => IsActiveNav(controller, action)
+        ? "nav-link text-dark active"
+        : "nav-link text-dark";
+    string NavCurrent(string controller, string action = "Index") => IsActiveNav(controller, action)
+        ? "page"
+        : "false";
 }
 <!DOCTYPE html>
 <html lang="@currentLang">
@@ -30,34 +43,37 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">@Localizer["Home"]</a>
+                            <a class="@NavClass("Home")" aria-current="@NavCurrent("Home")" asp-area="" asp-controller="Home" asp-action="Index">@Localizer["Home"]</a>
                         </li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">@Localizer["Products"]</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Customers" asp-action="Index">@Localizer["Customers"]</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Orders" asp-action="Index">@Localizer["Orders"]</a>
+                                <a class="@NavClass("Products")" aria-current="@NavCurrent("Products")" asp-area="" asp-controller="Products" asp-action="Index">@Localizer["Products"]</a>
                             </li>
                             @if (User.IsInRole("Manager") || User.IsInRole("Admin"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Categories" asp-action="Index">@Localizer["Categories"]</a>
+                                    <a class="@NavClass("Customers")" aria-current="@NavCurrent("Customers")" asp-area="" asp-controller="Customers" asp-action="Index">@Localizer["Customers"]</a>
+                                </li>
+                            }
+                            <li class="nav-item">
+                                <a class="@NavClass("Orders")" aria-current="@NavCurrent("Orders")" asp-area="" asp-controller="Orders" asp-action="Index">@Localizer["Orders"]</a>
+                            </li>
+                            @if (User.IsInRole("Manager") || User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="@NavClass("Categories")" aria-current="@NavCurrent("Categories")" asp-area="" asp-controller="Categories" asp-action="Index">@Localizer["Categories"]</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Suppliers" asp-action="Index">@Localizer["Suppliers"]</a>
+                                    <a class="@NavClass("Suppliers")" aria-current="@NavCurrent("Suppliers")" asp-area="" asp-controller="Suppliers" asp-action="Index">@Localizer["Suppliers"]</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Reports" asp-action="Index">@Localizer["Reports"]</a>
+                                    <a class="@NavClass("Reports")" aria-current="@NavCurrent("Reports")" asp-area="" asp-controller="Reports" asp-action="Index">@Localizer["Reports"]</a>
                                 </li>
                             }
                         }
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">@Localizer["Privacy"]</a>
+                            <a class="@NavClass("Home", "Privacy")" aria-current="@NavCurrent("Home", "Privacy")" asp-area="" asp-controller="Home" asp-action="Privacy">@Localizer["Privacy"]</a>
                         </li>
                     </ul>
                     <ul class="navbar-nav align-items-sm-center">
@@ -69,13 +85,19 @@
                         </li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <li class="nav-item d-flex align-items-center me-2">
+                            <li class="nav-item d-flex align-items-center me-2 gap-1">
                                 <span class="text-dark">@Localizer["Signed in as"] <strong>@User.Identity.Name</strong></span>
+                                @foreach (var role in User.FindAll(ClaimTypes.Role).Select(c => c.Value).Distinct())
+                                {
+                                    <span class="badge bg-primary">@role</span>
+                                }
                             </li>
                             <li class="nav-item">
                                 <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-outline-secondary btn-sm">@Localizer["Log Out"]</button>
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm" title="@Localizer["Log Out"]">
+                                        <i class="bi bi-box-arrow-right"></i> @Localizer["Log Out"]
+                                    </button>
                                 </form>
                             </li>
                         }

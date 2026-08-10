@@ -7,15 +7,15 @@ namespace ERP.Web.Models
     {
         public int Id { get; set; }
 
-        [Required]
-        [StringLength(150)]
+        [Required(ErrorMessage = "Product name is required.")]
+        [StringLength(150, ErrorMessage = "Product name cannot exceed 150 characters.")]
         public string Name { get; set; } = string.Empty;
 
-        [StringLength(1000)]
+        [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters.")]
         public string? Description { get; set; }
 
-        [Required]
-        [StringLength(50)]
+        [Required(ErrorMessage = "SKU is required.")]
+        [StringLength(50, ErrorMessage = "SKU cannot exceed 50 characters.")]
         [Display(Name = "SKU")]
         public string SKU { get; set; } = string.Empty;
 

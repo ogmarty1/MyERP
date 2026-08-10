@@ -19,6 +19,7 @@ namespace ERP.Web.Controllers
             _localizer = localizer;
         }
 
+        [Authorize(Roles = "Manager,Admin")]
         public async Task<IActionResult> Index()
         {
             var customers = await _customerService.GetAllAsync();

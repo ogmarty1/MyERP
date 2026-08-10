@@ -4,6 +4,7 @@ using ERP.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 
 namespace ERP.Web.Controllers
@@ -126,6 +127,25 @@ namespace ERP.Web.Controllers
             });
 
             TempData["SuccessMessage"] = _localizer["Product \"{0}\" was updated successfully.", model.Name].Value;
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Manager,Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                await _productService.DeleteAsync(id);
+            }
+            catch (DbUpdateException)
+            {
+                TempData["ErrorMessage"] = _localizer["This product cannot be deleted because it has existing order history."].Value;
+                return RedirectToAction(nameof(Index));
+            }
+
+            TempData["SuccessMessage"] = _localizer["Product was deleted successfully."].Value;
             return RedirectToAction(nameof(Index));
         }
 

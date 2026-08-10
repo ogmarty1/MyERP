@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ERP.BusinessLogic.Services;
 using ERP.Web.Models;
@@ -35,9 +36,17 @@ public class HomeController : Controller
         return View();
     }
 
+    [AllowAnonymous]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
+    [Route("Home/Error/{statusCode:int?}")]
+    public IActionResult Error(int? statusCode = null)
     {
+        if (statusCode.HasValue)
+        {
+            Response.StatusCode = statusCode.Value;
+            ViewData["StatusCode"] = statusCode.Value;
+        }
+
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }

@@ -103,20 +103,10 @@ namespace ERP.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [Authorize(Roles = "Manager,Admin")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var customer = await _customerService.GetByIdAsync(id);
-            if (customer == null)
-                return NotFound();
-
-            return View(customer);
-        }
-
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
         [Authorize(Roles = "Manager,Admin")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             try
             {
@@ -124,11 +114,8 @@ namespace ERP.Web.Controllers
             }
             catch (DbUpdateException)
             {
-                ModelState.AddModelError(string.Empty,
-                    _localizer["This customer cannot be deleted because it has existing orders on record."]);
-
-                var customer = await _customerService.GetByIdAsync(id);
-                return View(customer);
+                TempData["ErrorMessage"] = _localizer["This customer cannot be deleted because it has existing orders on record."].Value;
+                return RedirectToAction(nameof(Index));
             }
 
             TempData["SuccessMessage"] = _localizer["Customer was deleted successfully."].Value;

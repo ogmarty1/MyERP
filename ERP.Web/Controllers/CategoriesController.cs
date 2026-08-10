@@ -85,18 +85,9 @@ namespace ERP.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Delete(int id)
-        {
-            var category = await _categoryService.GetByIdAsync(id);
-            if (category == null)
-                return NotFound();
-
-            return View(category);
-        }
-
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             try
             {
@@ -104,11 +95,8 @@ namespace ERP.Web.Controllers
             }
             catch (DbUpdateException)
             {
-                ModelState.AddModelError(string.Empty,
-                    _localizer["This category cannot be deleted because it is assigned to one or more products."]);
-
-                var category = await _categoryService.GetByIdAsync(id);
-                return View(category);
+                TempData["ErrorMessage"] = _localizer["This category cannot be deleted because it is assigned to one or more products."].Value;
+                return RedirectToAction(nameof(Index));
             }
 
             TempData["SuccessMessage"] = _localizer["Category was deleted successfully."].Value;

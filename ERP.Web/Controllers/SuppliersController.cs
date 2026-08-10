@@ -100,18 +100,9 @@ namespace ERP.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Delete(int id)
-        {
-            var supplier = await _supplierService.GetByIdAsync(id);
-            if (supplier == null)
-                return NotFound();
-
-            return View(supplier);
-        }
-
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             try
             {
@@ -119,11 +110,8 @@ namespace ERP.Web.Controllers
             }
             catch (DbUpdateException)
             {
-                ModelState.AddModelError(string.Empty,
-                    _localizer["This supplier cannot be deleted because it is assigned to one or more products."]);
-
-                var supplier = await _supplierService.GetByIdAsync(id);
-                return View(supplier);
+                TempData["ErrorMessage"] = _localizer["This supplier cannot be deleted because it is assigned to one or more products."].Value;
+                return RedirectToAction(nameof(Index));
             }
 
             TempData["SuccessMessage"] = _localizer["Supplier was deleted successfully."].Value;

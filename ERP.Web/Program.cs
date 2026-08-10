@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using ERP.DataAccess.Data;
+using ERP.BusinessLogic;
 using ERP.BusinessLogic.Services;
 using ERP.Web;
 using ERP.Web.Localization;
@@ -49,17 +50,29 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await DataSeeder.SeedAsync(context);
+    var services = scope.ServiceProvider;
+    await DataSeeder.SeedAsync(
+        services.GetRequiredService<ApplicationDbContext>(),
+        services.GetRequiredService<ICategoryService>(),
+        services.GetRequiredService<ISupplierService>(),
+        services.GetRequiredService<IProductService>(),
+        services.GetRequiredService<ICustomerService>(),
+        services.GetRequiredService<IOrderService>());
 }
 
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
 {
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
 
 var localizationOptions = new RequestLocalizationOptions
 {

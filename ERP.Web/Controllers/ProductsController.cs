@@ -4,6 +4,7 @@ using ERP.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Localization;
 
 namespace ERP.Web.Controllers
 {
@@ -12,15 +13,18 @@ namespace ERP.Web.Controllers
         private readonly IProductService _productService;
         private readonly ICategoryService _categoryService;
         private readonly ISupplierService _supplierService;
+        private readonly IStringLocalizer<SharedResource> _localizer;
 
         public ProductsController(
             IProductService productService,
             ICategoryService categoryService,
-            ISupplierService supplierService)
+            ISupplierService supplierService,
+            IStringLocalizer<SharedResource> localizer)
         {
             _productService = productService;
             _categoryService = categoryService;
             _supplierService = supplierService;
+            _localizer = localizer;
         }
 
         public async Task<IActionResult> Index()
@@ -62,7 +66,7 @@ namespace ERP.Web.Controllers
                 SupplierId = model.SupplierId
             });
 
-            TempData["SuccessMessage"] = $"Product \"{model.Name}\" was created successfully.";
+            TempData["SuccessMessage"] = _localizer["Product \"{0}\" was created successfully.", model.Name].Value;
             return RedirectToAction(nameof(Index));
         }
 
@@ -121,7 +125,7 @@ namespace ERP.Web.Controllers
                 SupplierId = model.SupplierId
             });
 
-            TempData["SuccessMessage"] = $"Product \"{model.Name}\" was updated successfully.";
+            TempData["SuccessMessage"] = _localizer["Product \"{0}\" was updated successfully.", model.Name].Value;
             return RedirectToAction(nameof(Index));
         }
 

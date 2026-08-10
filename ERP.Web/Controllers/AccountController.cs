@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace ERP.Web.Controllers
 {
@@ -12,10 +13,12 @@ namespace ERP.Web.Controllers
     public class AccountController : Controller
     {
         private readonly IUserService _userService;
+        private readonly IStringLocalizer<SharedResource> _localizer;
 
-        public AccountController(IUserService userService)
+        public AccountController(IUserService userService, IStringLocalizer<SharedResource> localizer)
         {
             _userService = userService;
+            _localizer = localizer;
         }
 
         public IActionResult Login(string? returnUrl = null)
@@ -36,7 +39,7 @@ namespace ERP.Web.Controllers
             var user = await _userService.AuthenticateAsync(model.Username, model.Password);
             if (user == null)
             {
-                ModelState.AddModelError(string.Empty, "Invalid username or password.");
+                ModelState.AddModelError(string.Empty, _localizer["Invalid username or password."]);
                 return View(model);
             }
 

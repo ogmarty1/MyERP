@@ -4,6 +4,7 @@ using ERP.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace ERP.Web.Controllers
 {
@@ -11,10 +12,12 @@ namespace ERP.Web.Controllers
     public class SuppliersController : Controller
     {
         private readonly ISupplierService _supplierService;
+        private readonly IStringLocalizer<SharedResource> _localizer;
 
-        public SuppliersController(ISupplierService supplierService)
+        public SuppliersController(ISupplierService supplierService, IStringLocalizer<SharedResource> localizer)
         {
             _supplierService = supplierService;
+            _localizer = localizer;
         }
 
         public async Task<IActionResult> Index()
@@ -46,7 +49,7 @@ namespace ERP.Web.Controllers
                 IsActive = model.IsActive
             });
 
-            TempData["SuccessMessage"] = $"Supplier \"{model.Name}\" was created successfully.";
+            TempData["SuccessMessage"] = _localizer["Supplier \"{0}\" was created successfully.", model.Name].Value;
             return RedirectToAction(nameof(Index));
         }
 
@@ -93,7 +96,7 @@ namespace ERP.Web.Controllers
                 IsActive = model.IsActive
             });
 
-            TempData["SuccessMessage"] = $"Supplier \"{model.Name}\" was updated successfully.";
+            TempData["SuccessMessage"] = _localizer["Supplier \"{0}\" was updated successfully.", model.Name].Value;
             return RedirectToAction(nameof(Index));
         }
 
@@ -117,13 +120,13 @@ namespace ERP.Web.Controllers
             catch (DbUpdateException)
             {
                 ModelState.AddModelError(string.Empty,
-                    "This supplier cannot be deleted because it is assigned to one or more products.");
+                    _localizer["This supplier cannot be deleted because it is assigned to one or more products."]);
 
                 var supplier = await _supplierService.GetByIdAsync(id);
                 return View(supplier);
             }
 
-            TempData["SuccessMessage"] = "Supplier was deleted successfully.";
+            TempData["SuccessMessage"] = _localizer["Supplier was deleted successfully."].Value;
             return RedirectToAction(nameof(Index));
         }
     }

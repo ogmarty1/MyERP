@@ -5,6 +5,7 @@ using ERP.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace ERP.Web.Controllers
 {
@@ -14,17 +15,20 @@ namespace ERP.Web.Controllers
         private readonly IProductService _productService;
         private readonly ICustomerService _customerService;
         private readonly ApplicationDbContext _context;
+        private readonly IStringLocalizer<SharedResource> _localizer;
 
         public OrdersController(
             IOrderService orderService,
             IProductService productService,
             ICustomerService customerService,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            IStringLocalizer<SharedResource> localizer)
         {
             _orderService = orderService;
             _productService = productService;
             _customerService = customerService;
             _context = context;
+            _localizer = localizer;
         }
 
         public async Task<IActionResult> Index()
@@ -46,11 +50,11 @@ namespace ERP.Web.Controllers
         {
             if (model.Lines == null || model.Lines.Count == 0)
             {
-                ModelState.AddModelError(string.Empty, "An order must contain at least one item.");
+                ModelState.AddModelError(string.Empty, _localizer["An order must contain at least one item."]);
             }
             else if (model.Lines.Any(l => l.ProductId <= 0 || l.Quantity <= 0))
             {
-                ModelState.AddModelError(string.Empty, "All order items must have a valid product and a positive quantity.");
+                ModelState.AddModelError(string.Empty, _localizer["All order items must have a valid product and a positive quantity."]);
             }
 
             if (!ModelState.IsValid)
@@ -75,7 +79,7 @@ namespace ERP.Web.Controllers
                 }).ToList()
             });
 
-            TempData["SuccessMessage"] = $"Order \"{orderNumber}\" was created successfully.";
+            TempData["SuccessMessage"] = _localizer["Order \"{0}\" was created successfully.", orderNumber].Value;
             return RedirectToAction(nameof(Index));
         }
 

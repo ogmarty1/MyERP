@@ -4,16 +4,19 @@ using ERP.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace ERP.Web.Controllers
 {
     public class CustomersController : Controller
     {
         private readonly ICustomerService _customerService;
+        private readonly IStringLocalizer<SharedResource> _localizer;
 
-        public CustomersController(ICustomerService customerService)
+        public CustomersController(ICustomerService customerService, IStringLocalizer<SharedResource> localizer)
         {
             _customerService = customerService;
+            _localizer = localizer;
         }
 
         public async Task<IActionResult> Index()
@@ -47,7 +50,7 @@ namespace ERP.Web.Controllers
                 IsActive = model.IsActive
             });
 
-            TempData["SuccessMessage"] = $"Customer \"{model.Name}\" was created successfully.";
+            TempData["SuccessMessage"] = _localizer["Customer \"{0}\" was created successfully.", model.Name].Value;
             return RedirectToAction(nameof(Index));
         }
 
@@ -96,7 +99,7 @@ namespace ERP.Web.Controllers
                 IsActive = model.IsActive
             });
 
-            TempData["SuccessMessage"] = $"Customer \"{model.Name}\" was updated successfully.";
+            TempData["SuccessMessage"] = _localizer["Customer \"{0}\" was updated successfully.", model.Name].Value;
             return RedirectToAction(nameof(Index));
         }
 
@@ -122,13 +125,13 @@ namespace ERP.Web.Controllers
             catch (DbUpdateException)
             {
                 ModelState.AddModelError(string.Empty,
-                    "This customer cannot be deleted because it has existing orders on record.");
+                    _localizer["This customer cannot be deleted because it has existing orders on record."]);
 
                 var customer = await _customerService.GetByIdAsync(id);
                 return View(customer);
             }
 
-            TempData["SuccessMessage"] = "Customer was deleted successfully.";
+            TempData["SuccessMessage"] = _localizer["Customer was deleted successfully."].Value;
             return RedirectToAction(nameof(Index));
         }
     }

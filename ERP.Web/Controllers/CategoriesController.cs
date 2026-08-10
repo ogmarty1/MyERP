@@ -4,6 +4,7 @@ using ERP.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace ERP.Web.Controllers
 {
@@ -11,10 +12,12 @@ namespace ERP.Web.Controllers
     public class CategoriesController : Controller
     {
         private readonly ICategoryService _categoryService;
+        private readonly IStringLocalizer<SharedResource> _localizer;
 
-        public CategoriesController(ICategoryService categoryService)
+        public CategoriesController(ICategoryService categoryService, IStringLocalizer<SharedResource> localizer)
         {
             _categoryService = categoryService;
+            _localizer = localizer;
         }
 
         public async Task<IActionResult> Index()
@@ -41,7 +44,7 @@ namespace ERP.Web.Controllers
                 Description = model.Description
             });
 
-            TempData["SuccessMessage"] = $"Category \"{model.Name}\" was created successfully.";
+            TempData["SuccessMessage"] = _localizer["Category \"{0}\" was created successfully.", model.Name].Value;
             return RedirectToAction(nameof(Index));
         }
 
@@ -78,7 +81,7 @@ namespace ERP.Web.Controllers
                 Description = model.Description
             });
 
-            TempData["SuccessMessage"] = $"Category \"{model.Name}\" was updated successfully.";
+            TempData["SuccessMessage"] = _localizer["Category \"{0}\" was updated successfully.", model.Name].Value;
             return RedirectToAction(nameof(Index));
         }
 
@@ -102,13 +105,13 @@ namespace ERP.Web.Controllers
             catch (DbUpdateException)
             {
                 ModelState.AddModelError(string.Empty,
-                    "This category cannot be deleted because it is assigned to one or more products.");
+                    _localizer["This category cannot be deleted because it is assigned to one or more products."]);
 
                 var category = await _categoryService.GetByIdAsync(id);
                 return View(category);
             }
 
-            TempData["SuccessMessage"] = "Category was deleted successfully.";
+            TempData["SuccessMessage"] = _localizer["Category was deleted successfully."].Value;
             return RedirectToAction(nameof(Index));
         }
     }

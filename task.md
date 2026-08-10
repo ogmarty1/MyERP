@@ -1,26 +1,23 @@
-# TASK: UI/UX Polish - Stage 3: SweetAlert2 Modals, Toastr Notifications & UX Polish
+# TASK: UI/UX Polish - Stage 4: Final Wrap-Up, Edge-Case Safety & Presentation Readiness
 
 ## Context
-Continuing UI/UX polish for MyERP. Following the successful completion of Stage 2 (DataTables & Export), Stage 3 focuses on replacing native browser dialogs (`alert()`, `confirm()`) with modern, enterprise-grade UX components (SweetAlert2 and Toastr notifications) across all modules.
+Final stage of the MyERP UI/UX polishing process. Stages 1-3 (Dashboard & Charts, DataTables & Export, SweetAlert2 & Toastr) are successfully completed. Stage 4 focuses on polishing dynamic navigation, ensuring edge-case error pages are handled, cleaning up dead code, and preparing the app for flawless live presentation.
 
 ## Tasks to Complete
 
-### 1. External Libraries Integration
-- [x] Add **SweetAlert2** CSS/JS (via CDN) into `_Layout.cshtml`.
-- [x] Add **Toastr** CSS/JS (via CDN) into `_Layout.cshtml`.
+### 1. Dynamic Navigation & User Context Polish
+- [x] Ensure navigation bar in `_Layout.cshtml` highlights active menu links correctly depending on the current Route/Controller.
+- [x] Display logged-in user profile info neatly in the header (Username, assigned Roles badges, and explicit Logout button).
+- [x] Trim navigation links strictly based on user roles (`Admin`, `Manager`, `Employee`) as specified in `CLAUDE.md`. (Also restricted `CustomersController.Index()` itself to Manager/Admin so the backend matches the trimmed nav, not just the link visibility.)
 
-### 2. Toastr Notifications Setup (TempData & Feedback)
-- [x] Implement a global script/partial view (`_ValidationScriptsPartial` or layout script) that automatically intercepts ASP.NET Core `TempData["Success"]` and `TempData["Error"]` messages and displays them via **Toastr**. (Kept the app's existing `TempData["SuccessMessage"]` key rather than renaming to `"Success"`, and added a matching `"ErrorMessage"` key for symmetry.)
-- [x] Update Controllers (Products, Customers, Suppliers, Orders, Account) to set `TempData["Success"]` or `TempData["Error"]` upon successful actions or caught exceptions (`DbUpdateException`). Products/Orders/Account had no failure path needing a new error toast (Account's invalid-login case stays inline, matching standard login UX); Customers/Categories/Suppliers `DbUpdateException` handling now redirects with `TempData["ErrorMessage"]` instead of re-rendering an inline validation summary.
+### 2. Custom Error Pages & Exception Safety
+- [x] Ensure clean custom error handling for **404 (Not Found)** and **500 (Internal Server Error)** pages matching Bootstrap 5 layout instead of default raw ASP.NET error pages.
+- [x] Double-check that all `DbUpdateException` handlers for `DeleteBehavior.Restrict` (Products, Customers, Categories, Suppliers) render user-friendly Toastr error messages. (Products had no delete feature at all until now; added it to close the gap.)
 
-### 3. SweetAlert2 Confirmation Modals
-- [x] Replace standard `confirm()` browser dialogs with **SweetAlert2** confirmation popups for deleting records (Customers, Categories, Suppliers). Products has no delete feature in this codebase (no service/controller/route) and Orders has no cancel/status-change feature, so neither had a `confirm()` to replace — noted rather than inventing new CRUD endpoints.
-- [x] Ensure delete actions trigger a warning modal ("Are you sure you want to delete this item? This action cannot be undone.") before submitting the form.
+### 3. Final Code Cleanup & Seed Data Audit
+- [x] Remove unused `Console.WriteLine` statements, commented-out dead code, or temporary JS logs. (Audited: none found in our own code; only vendored jQuery-validation library files matched, left untouched.)
+- [x] Audit DB Seeding logic to ensure demo data (sample products, categories, suppliers, orders, users for all roles) is populated cleanly on fresh startup.
 
-### 4. Global UX & Form Enhancements
-- [x] Add loading indicators / spinners (disabled button + spinner icon) on submit buttons during form posts (Create/Edit) to prevent duplicate submissions.
-- [x] Ensure proper styling alignment with existing Bootstrap 5 layout.
-
-### 5. Verification & Build Check
-- [x] Run `dotnet build` to verify zero compilation errors or warnings.
-- [x] Check that SweetAlert2 popups and Toastr notifications respect multi-language settings (BG/EN) or display localized text cleanly.
+### 4. Final Verification
+- [x] Execute `dotnet build` to guarantee **0 errors and 0 warnings**.
+- [x] Verify full End-to-End user flow (Login as Admin/Manager/Employee -> Dashboard -> Nomenclatures -> Dynamic Orders -> Reports -> Logout).

@@ -1,16 +1,26 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using ERP.DataAccess.Data;
 using ERP.BusinessLogic.Services;
+using ERP.Web;
+using ERP.Web.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
 builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.Add(new AuthorizeFilter());
+})
+.AddDataAnnotationsLocalization(options =>
+{
+    options.DataAnnotationLocalizerProvider = (type, factory) => factory.Create(typeof(SharedResource));
 });
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -50,6 +60,18 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+var localizationOptions = new RequestLocalizationOptions
+{
+    // Formatting/parsing culture is pinned to en-US regardless of UI language, so
+    // <input type="number"> decimal parsing on forms never depends on selected language.
+    DefaultRequestCulture = new RequestCulture(culture: "en-US", uiCulture: "en"),
+    SupportedCultures = new[] { new CultureInfo("en-US") },
+    SupportedUICultures = new[] { new CultureInfo("en"), new CultureInfo("bg") }
+};
+localizationOptions.RequestCultureProviders = new List<IRequestCultureProvider> { new UiCultureCookieProvider() };
+
+app.UseRequestLocalization(localizationOptions);
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

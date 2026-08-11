@@ -30,6 +30,9 @@ namespace ERP.Web.Models
         [StringLength(250, ErrorMessage = "Address cannot exceed 250 characters.")]
         public string? Address { get; set; }
 
+        [StringLength(1000, ErrorMessage = "Notes cannot exceed 1000 characters.")]
+        public string? Notes { get; set; }
+
         [Display(Name = "Active")]
         public bool IsActive { get; set; } = true;
     }

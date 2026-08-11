@@ -1,0 +1,191 @@
+@model ERP.Web.Models.PurchaseOrderFormViewModel
+
+@{
+    ViewData["Title"] = Localizer["Create Purchase Order"];
+}
+
+<h1>@Localizer["Create Purchase Order"]</h1>
+
+<form id="purchaseOrderForm" asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <fieldset class="erp-field-group erp-field-group--primary">
+        <legend>@Localizer["Basic Info"]</legend>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="SupplierId" class="form-label">@Localizer["Supplier"]</label>
+                <select asp-for="SupplierId" class="form-select" asp-items="Model.Suppliers">
+                    <option value="">-- @Localizer["Select Supplier"] --</option>
+                </select>
+                <span asp-validation-for="SupplierId" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Notes" class="form-label">@Localizer["Notes"]</label>
+            <textarea asp-for="Notes" class="form-control" rows="2"></textarea>
+            <span asp-validation-for="Notes" class="text-danger"></span>
+        </div>
+    </fieldset>
+
+    <fieldset class="erp-field-group erp-field-group--success">
+        <legend>@Localizer["Ordered Products"]</legend>
+
+        <div class="row align-items-end mb-2">
+            <div class="col-md-6">
+                <label for="productSelect" class="form-label">@Localizer["Product"]</label>
+                <select id="productSelect" class="form-select">
+                    <option value="">-- @Localizer["Select Product"] --</option>
+                    @foreach (var product in Model.ProductCatalog)
+                    {
+                        <option value="@product.Id" data-name="@product.Name" data-price="@product.PurchasePrice.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)">
+                            @product.Name (@product.PurchasePrice.ToEuro())
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="quantityInput" class="form-label">@Localizer["Quantity"]</label>
+                <input type="number" id="quantityInput" class="form-control" min="1" step="1" />
+            </div>
+            <div class="col-md-2">
+                <label for="unitPriceInput" class="form-label">@Localizer["Purchase Price"]</label>
+                <input type="number" id="unitPriceInput" class="form-control" min="0" step="0.01" />
+            </div>
+            <div class="col-md-2">
+                <button type="button" id="addItemBtn" class="btn btn-outline-primary w-100">@Localizer["Add Item"]</button>
+            </div>
+        </div>
+
+        <div id="itemError" class="text-danger d-none mb-2"></div>
+
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>@Localizer["Product"]</th>
+                    <th>@Localizer["Quantity"]</th>
+                    <th>@Localizer["Purchase Price"]</th>
+                    <th>@Localizer["Line Total"]</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="itemsBody">
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="3" class="text-end">@Localizer["Total Amount"]</th>
+                    <th id="totalAmount">0,00 €</th>
+                    <th></th>
+                </tr>
+            </tfoot>
+        </table>
+    </fieldset>
+
+    <button type="submit" class="btn btn-primary">@Localizer["Create Purchase Order"]</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">@Localizer["Cancel"]</a>
+</form>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script>
+        const poI18n = {
+            selectProduct: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Localizer["Please select a product."].Value)),
+            quantityPositive: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Localizer["Quantity must be a positive whole number."].Value)),
+            remove: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Localizer["Remove"].Value)),
+            addAtLeastOneItem: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Localizer["Please add at least one purchase order item before submitting."].Value))
+        };
+
+        function formatEuroPo(value) {
+            var parts = value.toFixed(2).split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+            return parts.join(',') + ' €';
+        }
+
+        $(function () {
+            function recalcTotal() {
+                var total = 0;
+                $('#itemsBody tr').each(function () {
+                    total += parseFloat($(this).data('linetotal'));
+                });
+                $('#totalAmount').text(formatEuroPo(total));
+            }
+
+            function reindexRows() {
+                $('#itemsBody tr').each(function (i) {
+                    $(this).find('input[name$=".ProductId"]').attr('name', 'Lines[' + i + '].ProductId');
+                    $(this).find('input[name$=".Quantity"]').attr('name', 'Lines[' + i + '].Quantity');
+                    $(this).find('input[name$=".UnitPrice"]').attr('name', 'Lines[' + i + '].UnitPrice');
+                });
+            }
+
+            $('#productSelect').on('change', function () {
+                var price = $(this).find(':selected').data('price');
+                if (price !== undefined) {
+                    $('#unitPriceInput').val(price);
+                }
+            });
+
+            $('#addItemBtn').on('click', function () {
+                var select = $('#productSelect');
+                var selectedOption = select.find(':selected');
+                var productId = select.val();
+                var productName = selectedOption.data('name');
+                var price = parseFloat($('#unitPriceInput').val());
+                var quantity = parseInt($('#quantityInput').val(), 10);
+
+                $('#itemError').addClass('d-none').text('');
+
+                if (!productId) {
+                    $('#itemError').removeClass('d-none').text(poI18n.selectProduct);
+                    return;
+                }
+                if (!quantity || quantity <= 0) {
+                    $('#itemError').removeClass('d-none').text(poI18n.quantityPositive);
+                    return;
+                }
+                if (isNaN(price) || price < 0) {
+                    price = 0;
+                }
+
+                var lineTotal = price * quantity;
+                var index = $('#itemsBody tr').length;
+
+                var row = $('<tr>').attr('data-linetotal', lineTotal.toFixed(2));
+
+                row.append($('<td>').text(productName)
+                    .append($('<input type="hidden">').attr('name', 'Lines[' + index + '].ProductId').val(productId)));
+                row.append($('<td>').text(quantity)
+                    .append($('<input type="hidden">').attr('name', 'Lines[' + index + '].Quantity').val(quantity)));
+                row.append($('<td>').text(formatEuroPo(price))
+                    .append($('<input type="hidden">').attr('name', 'Lines[' + index + '].UnitPrice').val(price.toFixed(2))));
+                row.append($('<td>').text(formatEuroPo(lineTotal)));
+                row.append($('<td>').append(
+                    $('<button type="button" class="btn btn-sm btn-outline-danger remove-item">').text(poI18n.remove)
+                ));
+
+                $('#itemsBody').append(row);
+
+                $('#quantityInput').val('');
+                $('#unitPriceInput').val('');
+                recalcTotal();
+            });
+
+            $('#itemsBody').on('click', '.remove-item', function () {
+                $(this).closest('tr').remove();
+                reindexRows();
+                recalcTotal();
+            });
+
+            $('#purchaseOrderForm').on('submit', function (e) {
+                if ($('#itemsBody tr').length === 0) {
+                    e.preventDefault();
+                    $('#itemError').removeClass('d-none').text(poI18n.addAtLeastOneItem);
+                    return;
+                }
+
+                var $btn = $(this).find('button[type="submit"]').first();
+                $btn.prop('disabled', true);
+                $btn.prepend('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>');
+            });
+        });
+    </script>
+}

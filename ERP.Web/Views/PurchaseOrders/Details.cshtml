@@ -1,0 +1,331 @@
+@model ERP.Web.Models.PurchaseOrderDetailsViewModel
+@using ERP.DataAccess.Models
+@using System.Globalization
+
+@{
+    ViewData["Title"] = Localizer["Purchase Order Details"];
+    var po = Model.PurchaseOrder;
+    var isOrdered = po.Status == PurchaseOrderStatus.Ordered;
+    var forceEdit = ViewData["ForceEditMode"] is true;
+
+    string BadgeClass(PurchaseOrderStatus status) => status switch
+    {
+        PurchaseOrderStatus.Ordered => "bg-warning text-dark",
+        PurchaseOrderStatus.Received => "bg-success",
+        _ => "bg-secondary"
+    };
+
+    string StatusText(PurchaseOrderStatus status) => status switch
+    {
+        PurchaseOrderStatus.Ordered => Localizer["Ordered"],
+        PurchaseOrderStatus.Received => Localizer["Received"],
+        _ => status.ToString()
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>@Localizer["Purchase Order"] #@po.Id</h1>
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary">@Localizer["Back to Purchase Orders"]</a>
+        @if (isOrdered)
+        {
+            <form asp-action="MarkAsReceived" asp-route-id="@po.Id" method="post" class="d-inline js-submit-loading">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check2-circle"></i> @Localizer["Mark as Received"]
+                </button>
+            </form>
+        }
+    </div>
+</div>
+
+<div class="js-details-form-wrapper" data-force-edit="@(forceEdit ? "true" : "false")">
+    <div class="row">
+        <div class="col-lg-6">
+            <fieldset class="erp-field-group erp-field-group--primary">
+                <legend>@Localizer["Supplier Info"]</legend>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">@Localizer["Supplier"]</label>
+                        <p class="form-control-plaintext">@po.Supplier.Name</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">@Localizer["Company"]</label>
+                        <p class="form-control-plaintext">@(po.Supplier.CompanyName ?? "-")</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">@Localizer["Phone"]</label>
+                        <p class="form-control-plaintext">@(po.Supplier.Phone ?? "-")</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">@Localizer["Email"]</label>
+                        <p class="form-control-plaintext">@(po.Supplier.Email ?? "-")</p>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+        <div class="col-lg-6">
+            <fieldset class="erp-field-group erp-field-group--info">
+                <legend>@Localizer["Order Meta"]</legend>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">@Localizer["Status"]</label>
+                        <p class="mb-0"><span class="badge @BadgeClass(po.Status)">@StatusText(po.Status)</span></p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">@Localizer["Order Date"]</label>
+                        <p class="form-control-plaintext">@po.OrderDate.ToLocalTime().ToString("g")</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">@Localizer["Created By"]</label>
+                        <p class="form-control-plaintext">@po.CreatedByUser.FullName</p>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+
+    @if (isOrdered)
+    {
+        <div class="d-flex justify-content-end mb-2">
+            <span class="js-view-actions">
+                <button type="button" class="btn btn-primary js-edit-toggle">@Localizer["Edit"]</button>
+            </span>
+            <span class="js-edit-actions d-none">
+                <button type="submit" form="purchaseOrderEditForm" class="btn btn-success">@Localizer["Save"]</button>
+                <button type="button" class="btn btn-outline-secondary js-po-cancel">@Localizer["Cancel"]</button>
+            </span>
+        </div>
+    }
+
+    <form id="purchaseOrderEditForm" asp-action="EditItems" asp-route-id="@po.Id" method="post" class="js-details-form">
+        <fieldset class="erp-field-group erp-field-group--success">
+            <legend>@Localizer["Ordered Products"]</legend>
+            <table class="table table-bordered align-middle mb-0" id="poItemsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>@Localizer["SKU"]</th>
+                        <th>@Localizer["Product"]</th>
+                        <th>@Localizer["Purchase Price"]</th>
+                        <th>@Localizer["Quantity"]</th>
+                        <th>@Localizer["Line Total"]</th>
+                        @if (isOrdered)
+                        {
+                            <th class="js-po-edit-only"></th>
+                        }
+                    </tr>
+                </thead>
+                <tbody id="itemsBody">
+                    @for (var i = 0; i < po.PurchaseOrderDetails.Count; i++)
+                    {
+                        var line = po.PurchaseOrderDetails.ElementAt(i);
+                        var lineTotal = line.UnitPrice * line.Quantity;
+                        <tr data-unitprice="@line.UnitPrice.ToString("F2", CultureInfo.InvariantCulture)">
+                            <td>
+                                @line.Product.SKU
+                                <input type="hidden" name="Lines[@i].PurchaseOrderDetailId" value="@line.Id" />
+                                <input type="hidden" name="Lines[@i].ProductId" value="@line.ProductId" />
+                                <input type="hidden" name="Lines[@i].UnitPrice" value="@line.UnitPrice.ToString("F2", CultureInfo.InvariantCulture)" />
+                            </td>
+                            <td>@line.Product.Name</td>
+                            <td>@line.UnitPrice.ToEuro()</td>
+                            <td>
+                                @if (isOrdered)
+                                {
+                                    <input type="number" name="Lines[@i].Quantity" class="form-control erp-editable qty-input" min="1" step="1" value="@line.Quantity" readonly />
+                                }
+                                else
+                                {
+                                    <span>@line.Quantity</span>
+                                }
+                            </td>
+                            <td class="subtotal-cell" data-linetotal="@lineTotal.ToString("F2", CultureInfo.InvariantCulture)">@lineTotal.ToEuro()</td>
+                            @if (isOrdered)
+                            {
+                                <td class="js-po-edit-only"><button type="button" class="btn btn-sm btn-outline-danger remove-item">@Localizer["Remove"]</button></td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="4" class="text-end">@Localizer["Total Amount"]</th>
+                        <th id="totalAmountDisplay">@po.TotalAmount.ToEuro()</th>
+                        @if (isOrdered)
+                        {
+                            <th class="js-po-edit-only"></th>
+                        }
+                    </tr>
+                </tfoot>
+            </table>
+
+            @if (isOrdered)
+            {
+                <div class="row align-items-end mt-3 js-po-edit-only">
+                    <div class="col-md-5">
+                        <label for="productSelect" class="form-label">@Localizer["Product"]</label>
+                        <select id="productSelect" class="form-select">
+                            <option value="">-- @Localizer["Select Product"] --</option>
+                            @foreach (var product in Model.ProductCatalog)
+                            {
+                                <option value="@product.Id" data-sku="@product.SKU" data-name="@product.Name" data-price="@product.PurchasePrice.ToString("F2", CultureInfo.InvariantCulture)">
+                                    @product.Name (@product.PurchasePrice.ToEuro())
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="quantityInput" class="form-label">@Localizer["Quantity"]</label>
+                        <input type="number" id="quantityInput" class="form-control" min="1" step="1" />
+                    </div>
+                    <div class="col-md-2">
+                        <label for="unitPriceInput" class="form-label">@Localizer["Purchase Price"]</label>
+                        <input type="number" id="unitPriceInput" class="form-control" min="0" step="0.01" />
+                    </div>
+                    <div class="col-md-3">
+                        <button type="button" id="addItemBtn" class="btn btn-outline-primary w-100">@Localizer["Add Item"]</button>
+                    </div>
+                </div>
+                <div id="itemError" class="text-danger d-none mt-2"></div>
+            }
+        </fieldset>
+
+        <fieldset class="erp-field-group erp-field-group--secondary">
+            <legend>@Localizer["Notes"]</legend>
+            @if (isOrdered)
+            {
+                <textarea name="Notes" class="form-control erp-editable" rows="3" readonly>@po.Notes</textarea>
+            }
+            else
+            {
+                <p class="form-control-plaintext mb-0">@(po.Notes ?? "-")</p>
+            }
+        </fieldset>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        const poDetailsI18n = {
+            selectProduct: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Localizer["Please select a product."].Value)),
+            quantityPositive: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Localizer["Quantity must be a positive whole number."].Value)),
+            remove: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Localizer["Remove"].Value))
+        };
+
+        function formatEuroPod(value) {
+            var parts = value.toFixed(2).split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+            return parts.join(',') + ' €';
+        }
+
+        $(function () {
+            if ($('.js-details-form-wrapper').data('force-edit')) {
+                $('.js-edit-toggle').trigger('click');
+            }
+
+            function recalcTotal() {
+                var total = 0;
+                $('#itemsBody tr').each(function () {
+                    total += parseFloat($(this).find('.subtotal-cell').data('linetotal')) || 0;
+                });
+                $('#totalAmountDisplay').text(formatEuroPod(total));
+            }
+
+            function recalcRow($row) {
+                var qty = parseInt($row.find('.qty-input').val(), 10) || 0;
+                var price = parseFloat($row.data('unitprice'));
+                var subtotal = qty * price;
+                var $cell = $row.find('.subtotal-cell');
+                $cell.attr('data-linetotal', subtotal.toFixed(2));
+                $cell.text(formatEuroPod(subtotal));
+            }
+
+            function reindexRows() {
+                $('#itemsBody tr').each(function (i) {
+                    $(this).find('input[name$=".PurchaseOrderDetailId"]').attr('name', 'Lines[' + i + '].PurchaseOrderDetailId');
+                    $(this).find('input[name$=".ProductId"]').attr('name', 'Lines[' + i + '].ProductId');
+                    $(this).find('input[name$=".UnitPrice"]').attr('name', 'Lines[' + i + '].UnitPrice');
+                    $(this).find('input[name$=".Quantity"]').attr('name', 'Lines[' + i + '].Quantity');
+                });
+            }
+
+            $(document).on('input', '.qty-input', function () {
+                recalcRow($(this).closest('tr'));
+                recalcTotal();
+            });
+
+            $('#productSelect').on('change', function () {
+                var price = $(this).find(':selected').data('price');
+                if (price !== undefined) {
+                    $('#unitPriceInput').val(price);
+                }
+            });
+
+            $('#addItemBtn').on('click', function () {
+                var select = $('#productSelect');
+                var selectedOption = select.find(':selected');
+                var productId = select.val();
+                var sku = selectedOption.data('sku');
+                var productName = selectedOption.data('name');
+                var price = parseFloat($('#unitPriceInput').val());
+                var quantity = parseInt($('#quantityInput').val(), 10);
+
+                $('#itemError').addClass('d-none').text('');
+
+                if (!productId) {
+                    $('#itemError').removeClass('d-none').text(poDetailsI18n.selectProduct);
+                    return;
+                }
+                if (!quantity || quantity <= 0) {
+                    $('#itemError').removeClass('d-none').text(poDetailsI18n.quantityPositive);
+                    return;
+                }
+                if (isNaN(price) || price < 0) {
+                    price = 0;
+                }
+
+                var index = $('#itemsBody tr').length;
+                var subtotal = price * quantity;
+
+                var row = $('<tr>').attr('data-unitprice', price.toFixed(2));
+
+                row.append($('<td>').text(sku)
+                    .append($('<input type="hidden">').attr('name', 'Lines[' + index + '].PurchaseOrderDetailId').val(''))
+                    .append($('<input type="hidden">').attr('name', 'Lines[' + index + '].ProductId').val(productId))
+                    .append($('<input type="hidden">').attr('name', 'Lines[' + index + '].UnitPrice').val(price.toFixed(2))));
+                row.append($('<td>').text(productName));
+                row.append($('<td>').text(formatEuroPod(price)));
+                row.append($('<td>').append(
+                    $('<input type="number" class="form-control erp-editable qty-input" min="1" step="1">')
+                        .attr('name', 'Lines[' + index + '].Quantity').val(quantity)
+                ));
+                row.append($('<td class="subtotal-cell">').attr('data-linetotal', subtotal.toFixed(2)).text(formatEuroPod(subtotal)));
+                row.append($('<td class="js-po-edit-only">').append(
+                    $('<button type="button" class="btn btn-sm btn-outline-danger remove-item">').text(poDetailsI18n.remove)
+                ));
+
+                $('#itemsBody').append(row);
+
+                $('#quantityInput').val('');
+                $('#unitPriceInput').val('');
+                recalcTotal();
+            });
+
+            $('#itemsBody').on('click', '.remove-item', function () {
+                $(this).closest('tr').remove();
+                reindexRows();
+                recalcTotal();
+            });
+
+            $('#purchaseOrderEditForm').on('submit', function () {
+                reindexRows();
+            });
+
+            // Item rows can be added/removed/edited client-side before saving, so a plain form
+            // reset() (used by the generic .js-edit-cancel handler) can't undo that - reload instead.
+            $(document).on('click', '.js-po-cancel', function () {
+                location.reload();
+            });
+        });
+    </script>
+}

@@ -1,0 +1,109 @@
+@model List<ERP.DataAccess.Models.PurchaseOrder>
+@using ERP.DataAccess.Models
+
+@{
+    ViewData["Title"] = Localizer["Purchase Orders"];
+
+    string BadgeClass(PurchaseOrderStatus status) => status switch
+    {
+        PurchaseOrderStatus.Ordered => "bg-warning text-dark",
+        PurchaseOrderStatus.Received => "bg-success",
+        _ => "bg-secondary"
+    };
+
+    string StatusText(PurchaseOrderStatus status) => status switch
+    {
+        PurchaseOrderStatus.Ordered => Localizer["Ordered"],
+        PurchaseOrderStatus.Received => Localizer["Received"],
+        _ => status.ToString()
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>@Localizer["Purchase Orders"]</h1>
+    <a asp-action="Create" class="btn btn-primary">@Localizer["Create New Purchase Order"]</a>
+</div>
+
+<table id="purchaseOrdersTable" class="table table-striped table-hover table-bordered align-middle w-100">
+    <thead class="table-light">
+        <tr>
+            <th></th>
+            <th>@Localizer["PO ID"]</th>
+            <th>@Localizer["Supplier"]</th>
+            <th>@Localizer["Order Date"]</th>
+            <th>@Localizer["Total Amount"]</th>
+            <th>@Localizer["Status"]</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var po in Model)
+        {
+            <tr>
+                <td></td>
+                <td><a asp-action="Details" asp-route-id="@po.Id">@po.Id</a></td>
+                <td>@po.Supplier.Name</td>
+                <td data-order="@po.OrderDate.ToString("o")">@po.OrderDate.ToLocalTime().ToString("g")</td>
+                <td data-order="@po.TotalAmount">@po.TotalAmount.ToEuro()</td>
+                <td><span class="badge @BadgeClass(po.Status)">@StatusText(po.Status)</span></td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@po.Id" class="btn btn-sm btn-outline-secondary" title="@Localizer["View"]">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        $(function () {
+            function selectedOrAll(dt) {
+                return dt.rows({ selected: true }).count() > 0 ? true : null;
+            }
+
+            $.fn.dataTable.Buttons.defaults.dom.button.className = 'btn btn-outline-secondary btn-sm me-1';
+
+            $('#purchaseOrdersTable').DataTable({
+                language: window.dataTableLanguage,
+                order: [[1, 'desc']],
+                columnDefs: [
+                    { orderable: false, className: 'select-checkbox', targets: 0 },
+                    { orderable: false, targets: -1 }
+                ],
+                select: { style: 'multi', selector: 'td:first-child' },
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="bi bi-file-earmark-excel"></i> ' + window.dataTableButtonLabels.excel,
+                        exportOptions: { columns: ':not(:first-child):not(:last-child)', modifier: {} },
+                        action: function (e, dt, button, config) {
+                            config.exportOptions.modifier.selected = selectedOrAll(dt);
+                            $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                        }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: '<i class="bi bi-file-earmark-pdf"></i> ' + window.dataTableButtonLabels.pdf,
+                        exportOptions: { columns: ':not(:first-child):not(:last-child)', modifier: {} },
+                        action: function (e, dt, button, config) {
+                            config.exportOptions.modifier.selected = selectedOrAll(dt);
+                            $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="bi bi-printer"></i> ' + window.dataTableButtonLabels.print,
+                        exportOptions: { columns: ':not(:first-child):not(:last-child)', modifier: {} },
+                        action: function (e, dt, button, config) {
+                            config.exportOptions.modifier.selected = selectedOrAll(dt);
+                            $.fn.dataTable.ext.buttons.print.action.call(this, e, dt, button, config);
+                        }
+                    }
+                ]
+            });
+        });
+    </script>
+}

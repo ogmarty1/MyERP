@@ -28,6 +28,8 @@ namespace ERP.Web.Controllers
             {
                 viewModel.SalesByPeriod = await _reportService.GetSalesByPeriodAsync(filter.StartDate, filter.EndDate, filter.Grouping);
                 viewModel.SalesByCategory = await _reportService.GetSalesByCategoryAsync(filter.StartDate, filter.EndDate);
+                viewModel.PurchasesByPeriod = await _reportService.GetPurchasesByPeriodAsync(filter.StartDate, filter.EndDate, filter.Grouping);
+                viewModel.PurchasesBySupplier = await _reportService.GetPurchasesBySupplierAsync(filter.StartDate, filter.EndDate);
             }
 
             return View(viewModel);

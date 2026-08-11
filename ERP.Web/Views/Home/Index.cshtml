@@ -2,6 +2,13 @@
 
 @{
     ViewData["Title"] = Localizer["Dashboard"];
+
+    var monthlyRevenueUrl = Url.Action("Index", "Reports")
+        + $"?Filter.StartDate={Model.CurrentMonthStart:yyyy-MM-dd}&Filter.EndDate={Model.CurrentMonthEnd:yyyy-MM-dd}";
+    var newOrdersUrl = Url.Action("Index", "Orders")
+        + $"?Filter.StartDate={Model.CurrentMonthStart:yyyy-MM-dd}&Filter.EndDate={Model.CurrentMonthEnd:yyyy-MM-dd}";
+    var activeCustomersUrl = Url.Action("Index", "Customers");
+    var lowStockUrl = Url.Action("Index", "Products") + "?Filter.LowStockOnly=true";
 }
 
 <h1 class="mb-4">@Localizer["Dashboard"]</h1>
@@ -10,48 +17,56 @@
 {
     <div class="row g-3 mb-4">
         <div class="col-md-6 col-xl-3">
-            <div class="card kpi-card border-0 shadow-sm h-100">
-                <div class="card-body d-flex align-items-center justify-content-between">
-                    <div>
-                        <h6 class="card-title text-muted mb-1">@Localizer["Monthly Revenue"]</h6>
-                        <p class="card-text fs-4 fw-bold mb-0">@Model.MonthlyRevenue.ToEuro()</p>
+            <a href="@monthlyRevenueUrl" class="text-decoration-none text-reset d-block h-100">
+                <div class="card kpi-card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-1">@Localizer["Monthly Revenue"]</h6>
+                            <p class="card-text fs-4 fw-bold mb-0">@Model.MonthlyRevenue.ToEuro()</p>
+                        </div>
+                        <i class="bi bi-currency-exchange kpi-icon text-success"></i>
                     </div>
-                    <i class="bi bi-currency-exchange kpi-icon text-success"></i>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-6 col-xl-3">
-            <div class="card kpi-card border-0 shadow-sm h-100">
-                <div class="card-body d-flex align-items-center justify-content-between">
-                    <div>
-                        <h6 class="card-title text-muted mb-1">@Localizer["New Orders (Month)"]</h6>
-                        <p class="card-text fs-4 fw-bold mb-0">@Model.NewMonthlyOrdersCount</p>
+            <a href="@newOrdersUrl" class="text-decoration-none text-reset d-block h-100">
+                <div class="card kpi-card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-1">@Localizer["New Orders (Month)"]</h6>
+                            <p class="card-text fs-4 fw-bold mb-0">@Model.NewMonthlyOrdersCount</p>
+                        </div>
+                        <i class="bi bi-cart-check kpi-icon text-primary"></i>
                     </div>
-                    <i class="bi bi-cart-check kpi-icon text-primary"></i>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-6 col-xl-3">
-            <div class="card kpi-card border-0 shadow-sm h-100">
-                <div class="card-body d-flex align-items-center justify-content-between">
-                    <div>
-                        <h6 class="card-title text-muted mb-1">@Localizer["Active Customers"]</h6>
-                        <p class="card-text fs-4 fw-bold mb-0">@Model.TotalActiveCustomers</p>
+            <a href="@activeCustomersUrl" class="text-decoration-none text-reset d-block h-100">
+                <div class="card kpi-card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-1">@Localizer["Active Customers"]</h6>
+                            <p class="card-text fs-4 fw-bold mb-0">@Model.TotalActiveCustomers</p>
+                        </div>
+                        <i class="bi bi-people kpi-icon text-info"></i>
                     </div>
-                    <i class="bi bi-people kpi-icon text-info"></i>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-6 col-xl-3">
-            <div class="card kpi-card border-0 shadow-sm h-100">
-                <div class="card-body d-flex align-items-center justify-content-between">
-                    <div>
-                        <h6 class="card-title text-muted mb-1">@Localizer["Critical Stock"]</h6>
-                        <p class="card-text fs-4 fw-bold mb-0">@Model.CriticalStockCount</p>
+            <a href="@lowStockUrl" class="text-decoration-none text-reset d-block h-100">
+                <div class="card kpi-card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-1">@Localizer["Critical Stock"]</h6>
+                            <p class="card-text fs-4 fw-bold mb-0">@Model.CriticalStockCount</p>
+                        </div>
+                        <i class="bi bi-exclamation-triangle kpi-icon text-danger"></i>
                     </div>
-                    <i class="bi bi-exclamation-triangle kpi-icon text-danger"></i>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 

@@ -1,5 +1,6 @@
-@model List<ERP.DataAccess.Models.Order>
+@model ERP.Web.Models.OrdersIndexViewModel
 @using ERP.DataAccess.Models
+@using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
     ViewData["Title"] = Localizer["Orders"];
@@ -7,9 +8,9 @@
     string BadgeClass(OrderStatus status) => status switch
     {
         OrderStatus.Pending => "bg-warning text-dark",
-        OrderStatus.Processing => "bg-info text-dark",
         OrderStatus.Shipped => "bg-primary",
-        OrderStatus.Delivered => "bg-success",
+        OrderStatus.Completed => "bg-success",
+        OrderStatus.OnHold => "bg-secondary",
         OrderStatus.Cancelled => "bg-danger",
         _ => "bg-secondary"
     };
@@ -17,11 +18,20 @@
     string StatusText(OrderStatus status) => status switch
     {
         OrderStatus.Pending => Localizer["Pending"],
-        OrderStatus.Processing => Localizer["Processing"],
         OrderStatus.Shipped => Localizer["Shipped"],
-        OrderStatus.Delivered => Localizer["Delivered"],
+        OrderStatus.Completed => Localizer["Completed"],
+        OrderStatus.OnHold => Localizer["On Hold"],
         OrderStatus.Cancelled => Localizer["Cancelled"],
         _ => status.ToString()
+    };
+
+    var statusFilterOptions = new List<SelectListItem>
+    {
+        new(Localizer["Pending"], OrderStatus.Pending.ToString(), Model.Filter.Status == OrderStatus.Pending),
+        new(Localizer["Shipped"], OrderStatus.Shipped.ToString(), Model.Filter.Status == OrderStatus.Shipped),
+        new(Localizer["Completed"], OrderStatus.Completed.ToString(), Model.Filter.Status == OrderStatus.Completed),
+        new(Localizer["On Hold"], OrderStatus.OnHold.ToString(), Model.Filter.Status == OrderStatus.OnHold),
+        new(Localizer["Cancelled"], OrderStatus.Cancelled.ToString(), Model.Filter.Status == OrderStatus.Cancelled)
     };
 }
 
@@ -30,9 +40,51 @@
     <a asp-action="Create" class="btn btn-primary">@Localizer["Create New Order"]</a>
 </div>
 
+<div class="card mb-4">
+    <div class="card-body">
+        <form asp-action="Index" method="get" class="row g-3 align-items-end">
+            <div class="col-md-2">
+                <label asp-for="Filter.OrderId" class="form-label">@Localizer["Order ID"]</label>
+                <input asp-for="Filter.OrderId" class="form-control" type="number" />
+            </div>
+            <div class="col-md-2">
+                <label asp-for="Filter.CustomerName" class="form-label">@Localizer["Customer"]</label>
+                <input asp-for="Filter.CustomerName" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">@Localizer["Order Date"]</label>
+                <div class="input-group">
+                    <input asp-for="Filter.StartDate" class="form-control" title="@Localizer["Start Date"]" />
+                    <span class="input-group-text">-</span>
+                    <input asp-for="Filter.EndDate" class="form-control" title="@Localizer["End Date"]" />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">@Localizer["Total Amount"] (€)</label>
+                <div class="input-group">
+                    <input asp-for="Filter.MinTotal" class="form-control" type="number" step="0.01" placeholder="@Localizer["Min"]" />
+                    <span class="input-group-text">-</span>
+                    <input asp-for="Filter.MaxTotal" class="form-control" type="number" step="0.01" placeholder="@Localizer["Max"]" />
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label asp-for="Filter.Status" class="form-label">@Localizer["Status"]</label>
+                <select asp-for="Filter.Status" class="form-select" asp-items="statusFilterOptions">
+                    <option value="">@Localizer["All Statuses"]</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">@Localizer["Filter"]</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">@Localizer["Clear"]</a>
+            </div>
+        </form>
+    </div>
+</div>
+
 <table id="ordersTable" class="table table-striped table-hover table-bordered align-middle w-100">
     <thead class="table-light">
         <tr>
+            <th></th>
             <th>@Localizer["Order ID"]</th>
             <th>@Localizer["Customer"]</th>
             <th>@Localizer["Order Date"]</th>
@@ -41,10 +93,11 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var order in Model)
+        @foreach (var order in Model.Orders)
         {
             <tr>
-                <td>@order.Id</td>
+                <td></td>
+                <td><a asp-action="Details" asp-route-id="@order.Id">@order.Id</a></td>
                 <td>@order.Customer.Name</td>
                 <td data-order="@order.OrderDate.ToString("o")">@order.OrderDate.ToLocalTime().ToString("g")</td>
                 <td data-order="@order.TotalAmount">@order.TotalAmount.ToEuro()</td>
@@ -57,15 +110,48 @@
 @section Scripts {
     <script>
         $(function () {
+            function selectedOrAll(dt) {
+                return dt.rows({ selected: true }).count() > 0 ? true : null;
+            }
+
             $.fn.dataTable.Buttons.defaults.dom.button.className = 'btn btn-outline-secondary btn-sm me-1';
+
             $('#ordersTable').DataTable({
                 language: window.dataTableLanguage,
-                order: [[0, 'desc']],
+                order: [[1, 'desc']],
+                columnDefs: [
+                    { orderable: false, className: 'select-checkbox', targets: 0 }
+                ],
+                select: { style: 'multi', selector: 'td:first-child' },
                 dom: 'Bfrtip',
                 buttons: [
-                    { extend: 'copyHtml5', text: '<i class="bi bi-clipboard"></i> ' + window.dataTableButtonLabels.copy },
-                    { extend: 'excelHtml5', text: '<i class="bi bi-file-earmark-excel"></i> ' + window.dataTableButtonLabels.excel },
-                    { extend: 'print', text: '<i class="bi bi-printer"></i> ' + window.dataTableButtonLabels.print }
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="bi bi-file-earmark-excel"></i> ' + window.dataTableButtonLabels.excel,
+                        exportOptions: { columns: ':not(:first-child)', modifier: {} },
+                        action: function (e, dt, button, config) {
+                            config.exportOptions.modifier.selected = selectedOrAll(dt);
+                            $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                        }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: '<i class="bi bi-file-earmark-pdf"></i> ' + window.dataTableButtonLabels.pdf,
+                        exportOptions: { columns: ':not(:first-child)', modifier: {} },
+                        action: function (e, dt, button, config) {
+                            config.exportOptions.modifier.selected = selectedOrAll(dt);
+                            $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="bi bi-printer"></i> ' + window.dataTableButtonLabels.print,
+                        exportOptions: { columns: ':not(:first-child)', modifier: {} },
+                        action: function (e, dt, button, config) {
+                            config.exportOptions.modifier.selected = selectedOrAll(dt);
+                            $.fn.dataTable.ext.buttons.print.action.call(this, e, dt, button, config);
+                        }
+                    }
                 ]
             });
         });

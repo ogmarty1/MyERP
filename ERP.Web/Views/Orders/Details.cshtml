@@ -1,0 +1,329 @@
+@model ERP.Web.Models.OrderDetailsViewModel
+@using ERP.DataAccess.Models
+@using System.Globalization
+
+@{
+    ViewData["Title"] = Localizer["Order Details"];
+    var order = Model.Order;
+    var canManage = User.IsInRole("Manager") || User.IsInRole("Admin");
+    var isCancelled = order.Status == OrderStatus.Cancelled;
+    var forceEdit = ViewData["ForceEditMode"] is true;
+
+    string BadgeClass(OrderStatus status) => status switch
+    {
+        OrderStatus.Pending => "bg-warning text-dark",
+        OrderStatus.Shipped => "bg-primary",
+        OrderStatus.Completed => "bg-success",
+        OrderStatus.OnHold => "bg-secondary",
+        OrderStatus.Cancelled => "bg-danger",
+        _ => "bg-secondary"
+    };
+
+    string StatusButtonClass(OrderStatus status) => status switch
+    {
+        OrderStatus.Pending => "btn-warning",
+        OrderStatus.Shipped => "btn-primary",
+        OrderStatus.Completed => "btn-success",
+        OrderStatus.OnHold => "btn-secondary",
+        _ => "btn-secondary"
+    };
+
+    string StatusText(OrderStatus status) => status switch
+    {
+        OrderStatus.Pending => Localizer["Pending"],
+        OrderStatus.Shipped => Localizer["Shipped"],
+        OrderStatus.Completed => Localizer["Completed"],
+        OrderStatus.OnHold => Localizer["On Hold"],
+        OrderStatus.Cancelled => Localizer["Cancelled"],
+        _ => status.ToString()
+    };
+
+    var allStatuses = new[] { OrderStatus.Pending, OrderStatus.Shipped, OrderStatus.Completed, OrderStatus.OnHold };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>@Localizer["Order"] #@order.Id</h1>
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary">@Localizer["Back to Orders"]</a>
+        @if (canManage && !isCancelled)
+        {
+            <form asp-action="CancelOrder" asp-route-id="@order.Id" method="post" class="d-inline js-delete-form"
+                  data-confirm-title="@Localizer["Cancel Order"]"
+                  data-confirm-text="@Localizer["Are you sure you want to cancel this order?"] @Localizer["This will restore the reserved stock and cannot be undone."]"
+                  data-confirm-button="@Localizer["Yes, cancel it"]"
+                  data-cancel-button="@Localizer["No"]">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="bi bi-x-circle"></i> @Localizer["Cancel Order"]
+                </button>
+            </form>
+        }
+    </div>
+</div>
+
+@if (canManage && !isCancelled)
+{
+    <div class="mb-4">
+        <label class="form-label d-block">@Localizer["Status"]</label>
+        <div class="btn-group" role="group">
+            @foreach (var status in allStatuses)
+            {
+                var isCurrent = order.Status == status;
+                <form asp-action="ChangeStatus" asp-route-id="@order.Id" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="status" value="@status" />
+                    <button type="submit" class="btn btn-sm @(isCurrent ? StatusButtonClass(status) : "btn-outline-secondary")" @(isCurrent ? "disabled" : "")>
+                        @StatusText(status)
+                    </button>
+                </form>
+            }
+        </div>
+    </div>
+}
+
+<div class="js-details-form-wrapper" data-force-edit="@(forceEdit ? "true" : "false")">
+    <div class="row">
+        <div class="col-lg-6">
+            <fieldset class="erp-field-group erp-field-group--primary">
+                <legend>@Localizer["Customer Info"]</legend>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">@Localizer["Customer"]</label>
+                        <p class="form-control-plaintext">@order.Customer.Name</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">@Localizer["Company"]</label>
+                        <p class="form-control-plaintext">@(order.Customer.CompanyName ?? "-")</p>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label class="form-label">@Localizer["Shipping Address"]</label>
+                        <p class="form-control-plaintext">@(order.Customer.Address ?? "-")</p>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+        <div class="col-lg-6">
+            <fieldset class="erp-field-group erp-field-group--info">
+                <legend>@Localizer["Order Meta"]</legend>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">@Localizer["Status"]</label>
+                        <p class="mb-0"><span class="badge @BadgeClass(order.Status)">@StatusText(order.Status)</span></p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">@Localizer["Order Date"]</label>
+                        <p class="form-control-plaintext">@order.OrderDate.ToLocalTime().ToString("g")</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">@Localizer["Shipped Date"]</label>
+                        <p class="form-control-plaintext">@(order.ShippedDate.HasValue ? order.ShippedDate.Value.ToLocalTime().ToString("g") : "-")</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">@Localizer["Created By"]</label>
+                        <p class="form-control-plaintext">@order.User.FullName</p>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end mb-2">
+        @if (canManage && !isCancelled)
+        {
+            <span class="js-view-actions">
+                <button type="button" class="btn btn-primary js-edit-toggle">@Localizer["Edit"]</button>
+            </span>
+            <span class="js-edit-actions d-none">
+                <button type="submit" form="orderEditForm" class="btn btn-success">@Localizer["Save"]</button>
+                <button type="button" class="btn btn-outline-secondary js-order-cancel">@Localizer["Cancel"]</button>
+            </span>
+        }
+    </div>
+
+    <form id="orderEditForm" asp-action="EditItems" asp-route-id="@order.Id" method="post" class="js-details-form">
+        <fieldset class="erp-field-group erp-field-group--success">
+            <legend>@Localizer["Order Items"]</legend>
+            <table class="table table-bordered align-middle mb-0" id="orderItemsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>@Localizer["SKU"]</th>
+                        <th>@Localizer["Product"]</th>
+                        <th>@Localizer["Unit Price"]</th>
+                        <th>@Localizer["Quantity"]</th>
+                        <th>@Localizer["Line Total"]</th>
+                        <th class="js-order-edit-only"></th>
+                    </tr>
+                </thead>
+                <tbody id="itemsBody">
+                    @for (var i = 0; i < order.OrderDetails.Count; i++)
+                    {
+                        var line = order.OrderDetails.ElementAt(i);
+                        var lineTotal = (line.UnitPrice * line.Quantity) - line.Discount;
+                        <tr data-unitprice="@line.UnitPrice.ToString("F2", CultureInfo.InvariantCulture)">
+                            <td>
+                                @line.Product.SKU
+                                <input type="hidden" name="Lines[@i].OrderDetailId" value="@line.Id" />
+                                <input type="hidden" name="Lines[@i].ProductId" value="@line.ProductId" />
+                            </td>
+                            <td>@line.Product.Name</td>
+                            <td>@line.UnitPrice.ToEuro()</td>
+                            <td>
+                                <input type="number" name="Lines[@i].Quantity" class="form-control erp-editable qty-input" min="0" step="1" value="@line.Quantity" readonly />
+                            </td>
+                            <td class="subtotal-cell" data-linetotal="@lineTotal.ToString("F2", CultureInfo.InvariantCulture)">@lineTotal.ToEuro()</td>
+                            <td class="js-order-edit-only"><button type="button" class="btn btn-sm btn-outline-danger remove-item">@Localizer["Remove"]</button></td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="4" class="text-end">@Localizer["Total Amount"]</th>
+                        <th id="totalAmountDisplay">@order.TotalAmount.ToEuro()</th>
+                        <th class="js-order-edit-only"></th>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="row align-items-end mt-3 js-order-edit-only">
+                <div class="col-md-6">
+                    <label for="productSelect" class="form-label">@Localizer["Product"]</label>
+                    <select id="productSelect" class="form-select">
+                        <option value="">-- @Localizer["Select Product"] --</option>
+                        @foreach (var product in Model.ProductCatalog)
+                        {
+                            <option value="@product.Id" data-sku="@product.SKU" data-name="@product.Name" data-price="@product.SalePrice.ToString("F2", CultureInfo.InvariantCulture)">
+                                @product.Name (@product.SalePrice.ToEuro())
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="quantityInput" class="form-label">@Localizer["Quantity"]</label>
+                    <input type="number" id="quantityInput" class="form-control" min="1" step="1" />
+                </div>
+                <div class="col-md-3">
+                    <button type="button" id="addItemBtn" class="btn btn-outline-primary w-100">@Localizer["Add Item"]</button>
+                </div>
+            </div>
+            <div id="itemError" class="text-danger d-none mt-2"></div>
+        </fieldset>
+
+        <fieldset class="erp-field-group erp-field-group--secondary">
+            <legend>@Localizer["Notes"]</legend>
+            <textarea name="Notes" class="form-control erp-editable" rows="3" readonly>@order.Notes</textarea>
+        </fieldset>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        const orderDetailsI18n = {
+            selectProduct: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Localizer["Please select a product."].Value)),
+            quantityPositive: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Localizer["Quantity must be a positive whole number."].Value)),
+            remove: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Localizer["Remove"].Value))
+        };
+
+        function formatEuroOd(value) {
+            var parts = value.toFixed(2).split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+            return parts.join(',') + ' €';
+        }
+
+        $(function () {
+            if ($('.js-details-form-wrapper').data('force-edit')) {
+                $('.js-edit-toggle').trigger('click');
+            }
+
+            function recalcTotal() {
+                var total = 0;
+                $('#itemsBody tr').each(function () {
+                    total += parseFloat($(this).find('.subtotal-cell').data('linetotal')) || 0;
+                });
+                $('#totalAmountDisplay').text(formatEuroOd(total));
+            }
+
+            function recalcRow($row) {
+                var qty = parseInt($row.find('.qty-input').val(), 10) || 0;
+                var price = parseFloat($row.data('unitprice'));
+                var subtotal = qty * price;
+                var $cell = $row.find('.subtotal-cell');
+                $cell.attr('data-linetotal', subtotal.toFixed(2));
+                $cell.text(formatEuroOd(subtotal));
+            }
+
+            function reindexRows() {
+                $('#itemsBody tr').each(function (i) {
+                    $(this).find('input[name$=".OrderDetailId"]').attr('name', 'Lines[' + i + '].OrderDetailId');
+                    $(this).find('input[name$=".ProductId"]').attr('name', 'Lines[' + i + '].ProductId');
+                    $(this).find('input[name$=".Quantity"]').attr('name', 'Lines[' + i + '].Quantity');
+                });
+            }
+
+            $(document).on('input', '.qty-input', function () {
+                recalcRow($(this).closest('tr'));
+                recalcTotal();
+            });
+
+            $('#addItemBtn').on('click', function () {
+                var select = $('#productSelect');
+                var selectedOption = select.find(':selected');
+                var productId = select.val();
+                var sku = selectedOption.data('sku');
+                var productName = selectedOption.data('name');
+                var price = parseFloat(selectedOption.data('price'));
+                var quantity = parseInt($('#quantityInput').val(), 10);
+
+                $('#itemError').addClass('d-none').text('');
+
+                if (!productId) {
+                    $('#itemError').removeClass('d-none').text(orderDetailsI18n.selectProduct);
+                    return;
+                }
+                if (!quantity || quantity <= 0) {
+                    $('#itemError').removeClass('d-none').text(orderDetailsI18n.quantityPositive);
+                    return;
+                }
+
+                var index = $('#itemsBody tr').length;
+                var subtotal = price * quantity;
+
+                var row = $('<tr>').attr('data-unitprice', price.toFixed(2));
+
+                row.append($('<td>').text(sku)
+                    .append($('<input type="hidden">').attr('name', 'Lines[' + index + '].OrderDetailId').val(''))
+                    .append($('<input type="hidden">').attr('name', 'Lines[' + index + '].ProductId').val(productId)));
+                row.append($('<td>').text(productName));
+                row.append($('<td>').text(formatEuroOd(price)));
+                row.append($('<td>').append(
+                    $('<input type="number" class="form-control erp-editable qty-input" min="1" step="1">')
+                        .attr('name', 'Lines[' + index + '].Quantity').val(quantity)
+                ));
+                row.append($('<td class="subtotal-cell">').attr('data-linetotal', subtotal.toFixed(2)).text(formatEuroOd(subtotal)));
+                row.append($('<td class="js-order-edit-only">').append(
+                    $('<button type="button" class="btn btn-sm btn-outline-danger remove-item">').text(orderDetailsI18n.remove)
+                ));
+
+                $('#itemsBody').append(row);
+
+                $('#quantityInput').val('');
+                recalcTotal();
+            });
+
+            $('#itemsBody').on('click', '.remove-item', function () {
+                $(this).closest('tr').remove();
+                reindexRows();
+                recalcTotal();
+            });
+
+            $('#orderEditForm').on('submit', function () {
+                reindexRows();
+            });
+
+            // Item rows can be added/removed/edited client-side before saving, so a plain form
+            // reset() (used by the generic .js-edit-cancel handler) can't undo that - reload instead.
+            $(document).on('click', '.js-order-cancel', function () {
+                location.reload();
+            });
+        });
+    </script>
+}

@@ -26,6 +26,9 @@ namespace ERP.DataAccess.Models
         [StringLength(250)]
         public string? Address { get; set; }
 
+        [StringLength(1000)]
+        public string? Notes { get; set; }
+
         public bool IsActive { get; set; } = true;
 
         // Navigation property - клиентът може да има много поръчки

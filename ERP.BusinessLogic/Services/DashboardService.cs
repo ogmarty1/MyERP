@@ -57,6 +57,8 @@ namespace ERP.BusinessLogic.Services
                 NewMonthlyOrdersCount = newMonthlyOrdersCount,
                 TotalActiveCustomers = totalActiveCustomers,
                 CriticalStockCount = lowStockProducts.Count,
+                CurrentMonthStart = monthStart,
+                CurrentMonthEnd = monthEnd.AddDays(-1),
                 LowStockProducts = lowStockProducts,
                 MonthlySalesTrend = monthlySalesTrend,
                 TopSellingProducts = topSellingProducts

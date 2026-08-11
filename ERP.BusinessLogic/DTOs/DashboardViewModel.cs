@@ -14,6 +14,8 @@ namespace ERP.BusinessLogic.DTOs
         public int NewMonthlyOrdersCount { get; set; }
         public int TotalActiveCustomers { get; set; }
         public int CriticalStockCount { get; set; }
+        public DateTime CurrentMonthStart { get; set; }
+        public DateTime CurrentMonthEnd { get; set; }
 
         public List<Product> LowStockProducts { get; set; } = new();
 

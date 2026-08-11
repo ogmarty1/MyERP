@@ -36,17 +36,17 @@ namespace ERP.Web.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var user = await _userService.AuthenticateAsync(model.Username, model.Password);
+            var user = await _userService.AuthenticateAsync(model.Email, model.Password);
             if (user == null)
             {
-                ModelState.AddModelError(string.Empty, _localizer["Invalid username or password."]);
+                ModelState.AddModelError(string.Empty, _localizer["Invalid email or password."]);
                 return View(model);
             }
 
             var claims = new List<Claim>
             {
                 new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new(ClaimTypes.Name, user.Username)
+                new(ClaimTypes.Name, user.FullName)
             };
 
             claims.AddRange(user.UserRoles.Select(ur => new Claim(ClaimTypes.Role, ur.Role.Name)));

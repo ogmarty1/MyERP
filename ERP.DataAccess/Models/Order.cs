@@ -18,6 +18,11 @@ namespace ERP.DataAccess.Models
 
         public OrderStatus Status { get; set; } = OrderStatus.Pending;
 
+        public DateTime? ShippedDate { get; set; }
+
+        [StringLength(1000)]
+        public string? Notes { get; set; }
+
         // Foreign Key към Customer
         public int CustomerId { get; set; }
 

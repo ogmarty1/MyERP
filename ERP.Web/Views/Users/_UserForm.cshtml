@@ -1,0 +1,61 @@
+@model ERP.Web.Models.UserFormViewModel
+
+<input type="hidden" asp-for="Id" />
+
+<fieldset class="erp-field-group erp-field-group--primary">
+    <legend>@Localizer["Basic Info"]</legend>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="FirstName" class="form-label">@Localizer["First Name"]</label>
+            <input asp-for="FirstName" class="form-control" />
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="LastName" class="form-label">@Localizer["Last Name"]</label>
+            <input asp-for="LastName" class="form-control" />
+            <span asp-validation-for="LastName" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="Email" class="form-label">@Localizer["Email"]</label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="Phone" class="form-label">@Localizer["Phone"]</label>
+            <input asp-for="Phone" class="form-control" />
+            <span asp-validation-for="Phone" class="text-danger"></span>
+        </div>
+    </div>
+</fieldset>
+
+<fieldset class="erp-field-group erp-field-group--warning">
+    <legend>@Localizer["Account & Security"]</legend>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="Password" class="form-label">@Localizer["Password"]</label>
+            <input asp-for="Password" class="form-control" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="ConfirmPassword" class="form-label">@Localizer["Confirm Password"]</label>
+            <input asp-for="ConfirmPassword" class="form-control" />
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="RoleId" class="form-label">@Localizer["Assigned Role"]</label>
+            <select asp-for="RoleId" class="form-select" asp-items="Model.Roles">
+                <option value="">-- @Localizer["Select Role"] --</option>
+            </select>
+            <span asp-validation-for="RoleId" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3 d-flex align-items-end">
+            <div class="form-check">
+                <input asp-for="IsActive" class="form-check-input" />
+                <label asp-for="IsActive" class="form-check-label">@Localizer["Active"]</label>
+            </div>
+        </div>
+    </div>
+</fieldset>
+
+<button type="submit" class="btn btn-primary">@Localizer["Save"]</button>
+<a asp-action="Index" class="btn btn-outline-secondary">@Localizer["Cancel"]</a>

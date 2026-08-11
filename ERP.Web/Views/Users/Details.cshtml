@@ -1,0 +1,99 @@
+@model ERP.Web.Models.UserDetailsViewModel
+
+@{
+    ViewData["Title"] = $"{Model.Form.FirstName} {Model.Form.LastName}";
+    var forceEdit = ViewData["ForceEditMode"] is true;
+}
+
+<div class="js-details-form-wrapper" data-force-edit="@(forceEdit ? "true" : "false")">
+    <div class="d-flex justify-content-between align-items-center mb-1">
+        <h1>@Model.Form.FirstName @Model.Form.LastName</h1>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary">@Localizer["Back to Users"]</a>
+            <span class="js-view-actions">
+                <button type="button" class="btn btn-primary js-edit-toggle">@Localizer["Edit"]</button>
+            </span>
+            <span class="js-edit-actions d-none">
+                <button type="submit" form="userDetailsForm" class="btn btn-success">@Localizer["Save"]</button>
+                <button type="button" class="btn btn-outline-secondary js-edit-cancel">@Localizer["Cancel"]</button>
+            </span>
+        </div>
+    </div>
+    <p class="text-muted mb-3">@Localizer["System ID"]: #@Model.Form.Id</p>
+
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <form id="userDetailsForm" asp-action="Edit" asp-route-id="@Model.Form.Id" method="post" class="js-details-form">
+        <input type="hidden" asp-for="Form.Id" />
+
+        <div class="row">
+            <div class="col-lg-6">
+                <fieldset class="erp-field-group erp-field-group--primary">
+                    <legend>@Localizer["Basic Info"]</legend>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Form.FirstName" class="form-label">@Localizer["First Name"]</label>
+                            <input asp-for="Form.FirstName" class="form-control erp-editable" readonly />
+                            <span asp-validation-for="Form.FirstName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Form.LastName" class="form-label">@Localizer["Last Name"]</label>
+                            <input asp-for="Form.LastName" class="form-control erp-editable" readonly />
+                            <span asp-validation-for="Form.LastName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Form.Email" class="form-label">@Localizer["Email"]</label>
+                            <input asp-for="Form.Email" class="form-control erp-editable" readonly />
+                            <span asp-validation-for="Form.Email" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Form.Phone" class="form-label">@Localizer["Phone"]</label>
+                            <input asp-for="Form.Phone" class="form-control erp-editable" readonly />
+                            <span asp-validation-for="Form.Phone" class="text-danger"></span>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+            <div class="col-lg-6">
+                <fieldset class="erp-field-group erp-field-group--warning">
+                    <legend>@Localizer["Account & Security"]</legend>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Form.Password" class="form-label">@Localizer["Password"]</label>
+                            <input asp-for="Form.Password" class="form-control erp-editable" readonly placeholder="@Localizer["Leave blank to keep current password"]" />
+                            <span asp-validation-for="Form.Password" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Form.ConfirmPassword" class="form-label">@Localizer["Confirm Password"]</label>
+                            <input asp-for="Form.ConfirmPassword" class="form-control erp-editable" readonly />
+                            <span asp-validation-for="Form.ConfirmPassword" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Form.RoleId" class="form-label">@Localizer["Assigned Role"]</label>
+                            <select asp-for="Form.RoleId" class="form-select erp-editable" asp-items="Model.Form.Roles" disabled></select>
+                            <span asp-validation-for="Form.RoleId" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3 d-flex align-items-end">
+                            <div class="form-check">
+                                <input asp-for="Form.IsActive" class="form-check-input erp-editable" disabled />
+                                <label asp-for="Form.IsActive" class="form-check-label">@Localizer["Active"]</label>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script>
+        $(function () {
+            if ($('.js-details-form-wrapper').data('force-edit')) {
+                $('.js-edit-toggle').trigger('click');
+            }
+        });
+    </script>
+}

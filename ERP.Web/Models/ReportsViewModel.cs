@@ -22,5 +22,7 @@ namespace ERP.Web.Models
         public ReportsFilterViewModel Filter { get; set; } = new();
         public List<SalesByPeriodItem> SalesByPeriod { get; set; } = new();
         public List<SalesByCategoryItem> SalesByCategory { get; set; } = new();
+        public List<PurchasesByPeriodItem> PurchasesByPeriod { get; set; } = new();
+        public List<PurchasesBySupplierItem> PurchasesBySupplier { get; set; } = new();
     }
 }

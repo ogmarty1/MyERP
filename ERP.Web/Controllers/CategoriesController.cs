@@ -1,5 +1,6 @@
 using ERP.BusinessLogic.DTOs;
 using ERP.BusinessLogic.Services;
+using ERP.DataAccess.Models;
 using ERP.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +27,15 @@ namespace ERP.Web.Controllers
             return View(categories);
         }
 
+        public async Task<IActionResult> Details(int id)
+        {
+            var category = await _categoryService.GetByIdAsync(id);
+            if (category == null)
+                return NotFound();
+
+            return View(BuildDetailsViewModel(category));
+        }
+
         public IActionResult Create()
         {
             return View(new CategoryFormViewModel());
@@ -48,31 +58,23 @@ namespace ERP.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Edit(int id)
-        {
-            var category = await _categoryService.GetByIdAsync(id);
-            if (category == null)
-                return NotFound();
-
-            var viewModel = new CategoryFormViewModel
-            {
-                Id = category.Id,
-                Name = category.Name,
-                Description = category.Description
-            };
-
-            return View(viewModel);
-        }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, CategoryFormViewModel model)
+        public async Task<IActionResult> Edit(int id, [Bind(Prefix = "Form")] CategoryFormViewModel model)
         {
             if (id != model.Id)
                 return BadRequest();
 
             if (!ModelState.IsValid)
-                return View(model);
+            {
+                var category = await _categoryService.GetByIdAsync(id);
+                if (category == null)
+                    return NotFound();
+
+                var viewModel = BuildDetailsViewModel(category, model);
+                ViewData["ForceEditMode"] = true;
+                return View("Details", viewModel);
+            }
 
             await _categoryService.UpdateAsync(new UpdateCategoryRequest
             {
@@ -82,7 +84,7 @@ namespace ERP.Web.Controllers
             });
 
             TempData["SuccessMessage"] = _localizer["Category \"{0}\" was updated successfully.", model.Name].Value;
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         [HttpPost]
@@ -96,11 +98,27 @@ namespace ERP.Web.Controllers
             catch (DbUpdateException)
             {
                 TempData["ErrorMessage"] = _localizer["This category cannot be deleted because it is assigned to one or more products."].Value;
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Details), new { id });
             }
 
             TempData["SuccessMessage"] = _localizer["Category was deleted successfully."].Value;
             return RedirectToAction(nameof(Index));
+        }
+
+        private static CategoryDetailsViewModel BuildDetailsViewModel(Category category, CategoryFormViewModel? formOverride = null)
+        {
+            var form = formOverride ?? new CategoryFormViewModel
+            {
+                Id = category.Id,
+                Name = category.Name,
+                Description = category.Description
+            };
+
+            return new CategoryDetailsViewModel
+            {
+                Form = form,
+                Products = category.Products.OrderBy(p => p.Name).ToList()
+            };
         }
     }
 }

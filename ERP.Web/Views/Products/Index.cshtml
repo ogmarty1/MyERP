@@ -1,38 +1,121 @@
-@model List<ERP.DataAccess.Models.Product>
+@model ERP.Web.Models.ProductsIndexViewModel
+@using ERP.DataAccess.Models
+@using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
     ViewData["Title"] = Localizer["Products"];
+
+    string StatusBadgeClass(ProductStatus status) => status switch
+    {
+        ProductStatus.Active => "bg-success",
+        ProductStatus.Discontinued => "bg-secondary",
+        ProductStatus.OutOfStock => "bg-danger",
+        _ => "bg-secondary"
+    };
+
+    string StatusText(ProductStatus status) => status switch
+    {
+        ProductStatus.Active => Localizer["Active"],
+        ProductStatus.Discontinued => Localizer["Discontinued"],
+        ProductStatus.OutOfStock => Localizer["Out Of Stock"],
+        _ => status.ToString()
+    };
+
+    var statusFilterOptions = new List<SelectListItem>
+    {
+        new(Localizer["Active"], ProductStatus.Active.ToString(), Model.Filter.Status == ProductStatus.Active),
+        new(Localizer["Discontinued"], ProductStatus.Discontinued.ToString(), Model.Filter.Status == ProductStatus.Discontinued),
+        new(Localizer["Out Of Stock"], ProductStatus.OutOfStock.ToString(), Model.Filter.Status == ProductStatus.OutOfStock)
+    };
+
+    var canManage = User.IsInRole("Manager") || User.IsInRole("Admin");
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>@Localizer["Products"]</h1>
-    @if (User.IsInRole("Manager") || User.IsInRole("Admin"))
+    @if (canManage)
     {
         <a asp-action="Create" class="btn btn-primary">@Localizer["Create New Product"]</a>
     }
 </div>
 
+<div class="card mb-4">
+    <div class="card-body">
+        <form asp-action="Index" method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label asp-for="Filter.Keyword" class="form-label">@Localizer["Keyword"]</label>
+                <input asp-for="Filter.Keyword" class="form-control" placeholder="@Localizer["Name or SKU"]" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Filter.CategoryId" class="form-label">@Localizer["Category"]</label>
+                <select asp-for="Filter.CategoryId" class="form-select" asp-items="Model.Filter.Categories">
+                    <option value="">@Localizer["All Categories"]</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Filter.SupplierId" class="form-label">@Localizer["Supplier"]</label>
+                <select asp-for="Filter.SupplierId" class="form-select" asp-items="Model.Filter.Suppliers">
+                    <option value="">@Localizer["All Suppliers"]</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Filter.Status" class="form-label">@Localizer["Status"]</label>
+                <select asp-for="Filter.Status" class="form-select" asp-items="statusFilterOptions">
+                    <option value="">@Localizer["All Statuses"]</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">@Localizer["Price Range"] (€)</label>
+                <div class="input-group">
+                    <input asp-for="Filter.MinPrice" class="form-control" type="number" step="0.01" placeholder="@Localizer["Min"]" />
+                    <span class="input-group-text">-</span>
+                    <input asp-for="Filter.MaxPrice" class="form-control" type="number" step="0.01" placeholder="@Localizer["Max"]" />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">@Localizer["Stock Range"]</label>
+                <div class="input-group">
+                    <input asp-for="Filter.MinStock" class="form-control" type="number" step="1" placeholder="@Localizer["Min"]" />
+                    <span class="input-group-text">-</span>
+                    <input asp-for="Filter.MaxStock" class="form-control" type="number" step="1" placeholder="@Localizer["Max"]" />
+                </div>
+            </div>
+            <div class="col-md-3 form-check">
+                <input asp-for="Filter.LowStockOnly" class="form-check-input" />
+                <label asp-for="Filter.LowStockOnly" class="form-check-label">@Localizer["Low stock only"]</label>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary">@Localizer["Filter"]</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">@Localizer["Clear"]</a>
+            </div>
+        </form>
+    </div>
+</div>
+
 <table id="productsTable" class="table table-striped table-hover table-bordered align-middle w-100">
     <thead class="table-light">
         <tr>
+            <th></th>
+            <th>@Localizer["SKU"]</th>
             <th>@Localizer["Name"]</th>
             <th>@Localizer["Category"]</th>
             <th>@Localizer["Supplier"]</th>
-            <th>@Localizer["Purchase Price"]</th>
             <th>@Localizer["Sale Price"]</th>
             <th>@Localizer["Quantity In Stock"]</th>
+            <th>@Localizer["Status"]</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var product in Model)
+        @foreach (var product in Model.Products)
         {
             var isLowStock = product.QuantityInStock <= product.MinimumQuantity;
             <tr class="@(isLowStock ? "table-danger" : "")">
+                <td></td>
+                <td><a asp-action="Details" asp-route-id="@product.Id">@product.SKU</a></td>
                 <td>@product.Name</td>
                 <td>@product.Category.Name</td>
                 <td>@(product.Supplier?.Name ?? "-")</td>
-                <td data-order="@product.PurchasePrice">@product.PurchasePrice.ToEuro()</td>
                 <td data-order="@product.SalePrice">@product.SalePrice.ToEuro()</td>
                 <td>
                     @product.QuantityInStock
@@ -41,24 +124,16 @@
                         <span class="badge bg-danger ms-1">@Localizer["Low Stock"]</span>
                     }
                 </td>
+                <td><span class="badge @StatusBadgeClass(product.Status)">@StatusText(product.Status)</span></td>
                 <td>
-                    @if (User.IsInRole("Manager") || User.IsInRole("Admin"))
+                    @if (canManage)
                     {
-                        <div class="d-flex gap-1">
-                            <a asp-action="Edit" asp-route-id="@product.Id" class="btn btn-sm btn-outline-secondary" title="@Localizer["Edit"]">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                            <form asp-action="Delete" asp-route-id="@product.Id" method="post" class="d-inline js-delete-form"
-                                  data-confirm-title="@Localizer["Delete Product"]"
-                                  data-confirm-text="@Localizer["Are you sure you want to delete this product?"] @Localizer["This action cannot be undone."]"
-                                  data-confirm-button="@Localizer["Yes, delete it"]"
-                                  data-cancel-button="@Localizer["Cancel"]">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-sm btn-outline-danger" title="@Localizer["Delete"]">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary js-adjust-inventory"
+                                data-bs-toggle="modal" data-bs-target="#adjustInventoryModal"
+                                data-product-id="@product.Id" data-product-name="@product.Name"
+                                data-current-stock="@product.QuantityInStock" title="@Localizer["Adjust Inventory"]">
+                            <i class="bi bi-box-seam"></i>
+                        </button>
                     }
                 </td>
             </tr>
@@ -66,18 +141,105 @@
     </tbody>
 </table>
 
+<div class="modal fade" id="adjustInventoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form asp-action="AdjustInventory" method="post" class="modal-content js-submit-loading">
+            @Html.AntiForgeryToken()
+            <div class="modal-header">
+                <h5 class="modal-title">@Localizer["Adjust Inventory"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="ProductId" id="adjustProductId" />
+                <p class="mb-3">
+                    <strong id="adjustProductName"></strong><br />
+                    <span class="text-muted">@Localizer["Current Stock"]: <span id="adjustCurrentStock"></span></span>
+                </p>
+                <div class="mb-3">
+                    <label class="form-label">@Localizer["Type"]</label>
+                    <select name="MovementType" class="form-select" id="adjustMovementType">
+                        <option value="Inflow">@Localizer["Inflow"]</option>
+                        <option value="Outflow">@Localizer["Outflow"]</option>
+                        <option value="Adjustment">@Localizer["Adjustment"]</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" id="adjustQuantityLabel">@Localizer["Quantity"]</label>
+                    <input type="number" name="Quantity" class="form-control" min="0" step="1" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@Localizer["Reason"]</label>
+                    <textarea name="Reason" class="form-control" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">@Localizer["Cancel"]</button>
+                <button type="submit" class="btn btn-primary">@Localizer["Save"]</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         $(function () {
+            $(document).on('click', '.js-adjust-inventory', function () {
+                var $btn = $(this);
+                $('#adjustProductId').val($btn.data('product-id'));
+                $('#adjustProductName').text($btn.data('product-name'));
+                $('#adjustCurrentStock').text($btn.data('current-stock'));
+            });
+
+            $('#adjustMovementType').on('change', function () {
+                var label = $(this).val() === 'Adjustment'
+                    ? '@Html.Raw(Localizer["New Stock Level"])'
+                    : '@Html.Raw(Localizer["Quantity"])';
+                $('#adjustQuantityLabel').text(label);
+            });
+
+            function selectedOrAll(dt) {
+                return dt.rows({ selected: true }).count() > 0 ? true : null;
+            }
+
             $.fn.dataTable.Buttons.defaults.dom.button.className = 'btn btn-outline-secondary btn-sm me-1';
+
             $('#productsTable').DataTable({
                 language: window.dataTableLanguage,
-                columnDefs: [{ orderable: false, targets: -1 }],
+                order: [[2, 'asc']],
+                columnDefs: [
+                    { orderable: false, className: 'select-checkbox', targets: 0 },
+                    { orderable: false, targets: -1 }
+                ],
+                select: { style: 'multi', selector: 'td:first-child' },
                 dom: 'Bfrtip',
                 buttons: [
-                    { extend: 'copyHtml5', text: '<i class="bi bi-clipboard"></i> ' + window.dataTableButtonLabels.copy, exportOptions: { columns: ':not(:last-child)' } },
-                    { extend: 'excelHtml5', text: '<i class="bi bi-file-earmark-excel"></i> ' + window.dataTableButtonLabels.excel, exportOptions: { columns: ':not(:last-child)' } },
-                    { extend: 'print', text: '<i class="bi bi-printer"></i> ' + window.dataTableButtonLabels.print, exportOptions: { columns: ':not(:last-child)' } }
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="bi bi-file-earmark-excel"></i> ' + window.dataTableButtonLabels.excel,
+                        exportOptions: { columns: ':not(:first-child):not(:last-child)', modifier: {} },
+                        action: function (e, dt, button, config) {
+                            config.exportOptions.modifier.selected = selectedOrAll(dt);
+                            $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                        }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: '<i class="bi bi-file-earmark-pdf"></i> ' + window.dataTableButtonLabels.pdf,
+                        exportOptions: { columns: ':not(:first-child):not(:last-child)', modifier: {} },
+                        action: function (e, dt, button, config) {
+                            config.exportOptions.modifier.selected = selectedOrAll(dt);
+                            $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="bi bi-printer"></i> ' + window.dataTableButtonLabels.print,
+                        exportOptions: { columns: ':not(:first-child):not(:last-child)', modifier: {} },
+                        action: function (e, dt, button, config) {
+                            config.exportOptions.modifier.selected = selectedOrAll(dt);
+                            $.fn.dataTable.ext.buttons.print.action.call(this, e, dt, button, config);
+                        }
+                    }
                 ]
             });
         });

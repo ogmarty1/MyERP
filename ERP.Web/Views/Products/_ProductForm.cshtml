@@ -1,4 +1,15 @@
 @model ERP.Web.Models.ProductFormViewModel
+@using ERP.DataAccess.Models
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    var statusOptions = new List<SelectListItem>
+    {
+        new(Localizer["Active"], ProductStatus.Active.ToString(), Model.Status == ProductStatus.Active),
+        new(Localizer["Discontinued"], ProductStatus.Discontinued.ToString(), Model.Status == ProductStatus.Discontinued),
+        new(Localizer["Out Of Stock"], ProductStatus.OutOfStock.ToString(), Model.Status == ProductStatus.OutOfStock)
+    };
+}
 
 <input type="hidden" asp-for="Id" />
 
@@ -64,9 +75,24 @@
     </div>
 </div>
 
-<div class="form-check mb-3">
-    <input asp-for="IsActive" class="form-check-input" />
-    <label asp-for="IsActive" class="form-check-label">@Localizer["Active"]</label>
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="Status" class="form-label">@Localizer["Status"]</label>
+        <select asp-for="Status" class="form-select" asp-items="statusOptions"></select>
+        <span asp-validation-for="Status" class="text-danger"></span>
+    </div>
+    <div class="col-md-6 mb-3 d-flex align-items-end">
+        <div class="form-check">
+            <input asp-for="IsActive" class="form-check-input" />
+            <label asp-for="IsActive" class="form-check-label">@Localizer["Active"]</label>
+        </div>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Notes" class="form-label">@Localizer["Notes"]</label>
+    <textarea asp-for="Notes" class="form-control" rows="2"></textarea>
+    <span asp-validation-for="Notes" class="text-danger"></span>
 </div>
 
 <button type="submit" class="btn btn-primary">@Localizer["Save"]</button>

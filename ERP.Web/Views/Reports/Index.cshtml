@@ -10,103 +10,503 @@
         new(Localizer["Daily"], ReportPeriodGrouping.Daily.ToString(), Model.Filter.Grouping == ReportPeriodGrouping.Daily),
         new(Localizer["Monthly"], ReportPeriodGrouping.Monthly.ToString(), Model.Filter.Grouping == ReportPeriodGrouping.Monthly)
     };
+
+    var totalRevenue = Model.SalesByPeriod.Sum(i => i.TotalRevenue);
+    var totalOrders = Model.SalesByPeriod.Sum(i => i.OrderCount);
+    var totalQuantitySold = Model.SalesByCategory.Sum(i => i.QuantitySold);
+    var topCategory = Model.SalesByCategory.OrderByDescending(i => i.TotalRevenue).FirstOrDefault();
+
+    var totalSpend = Model.PurchasesByPeriod.Sum(i => i.TotalSpend);
+    var totalPurchaseOrders = Model.PurchasesByPeriod.Sum(i => i.PurchaseOrderCount);
+    var totalQuantityPurchased = Model.PurchasesBySupplier.Sum(i => i.QuantityPurchased);
+    var topSupplier = Model.PurchasesBySupplier.OrderByDescending(i => i.TotalSpend).FirstOrDefault();
 }
 
-<h1 class="mb-4">@Localizer["Sales Reports"]</h1>
+<h1 class="mb-4">@Localizer["Reports"]</h1>
 
 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-<form asp-action="Index" method="get" class="row g-3 align-items-end mb-4">
-    <div class="col-auto">
-        <label asp-for="Filter.StartDate" class="form-label">@Localizer["Start Date"]</label>
-        <input asp-for="Filter.StartDate" class="form-control" />
-    </div>
-    <div class="col-auto">
-        <label asp-for="Filter.EndDate" class="form-label">@Localizer["End Date"]</label>
-        <input asp-for="Filter.EndDate" class="form-control" />
-    </div>
-    <div class="col-auto">
-        <label asp-for="Filter.Grouping" class="form-label">@Localizer["Group By"]</label>
-        <select asp-for="Filter.Grouping" asp-items="groupingOptions" class="form-select"></select>
-    </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-primary">@Localizer["Filter"]</button>
-        <a asp-action="Index" class="btn btn-outline-secondary">@Localizer["Clear"]</a>
-    </div>
-</form>
-
-<div class="row">
-    <div class="col-lg-6 mb-4">
-        <h4 class="mb-3">@Localizer["Sales by Period"]</h4>
-        @if (Model.SalesByPeriod.Count == 0)
-        {
-            <p class="text-muted">@Localizer["No sales found for the selected range."]</p>
-        }
-        else
-        {
-            <table class="table table-striped table-bordered align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>@Localizer["Period"]</th>
-                        <th>@Localizer["Order Count"]</th>
-                        <th>@Localizer["Total Revenue"]</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model.SalesByPeriod)
-                    {
-                        <tr>
-                            <td>@item.PeriodLabel</td>
-                            <td>@item.OrderCount</td>
-                            <td>@item.TotalRevenue.ToEuro()</td>
-                        </tr>
-                    }
-                </tbody>
-                <tfoot>
-                    <tr class="table-light fw-bold">
-                        <td>@Localizer["Total"]</td>
-                        <td>@Model.SalesByPeriod.Sum(i => i.OrderCount)</td>
-                        <td>@Model.SalesByPeriod.Sum(i => i.TotalRevenue).ToEuro()</td>
-                    </tr>
-                </tfoot>
-            </table>
-        }
-    </div>
-
-    <div class="col-lg-6 mb-4">
-        <h4 class="mb-3">@Localizer["Sales by Category"]</h4>
-        @if (Model.SalesByCategory.Count == 0)
-        {
-            <p class="text-muted">@Localizer["No sales found for the selected range."]</p>
-        }
-        else
-        {
-            <table class="table table-striped table-bordered align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>@Localizer["Category"]</th>
-                        <th>@Localizer["Quantity Sold"]</th>
-                        <th>@Localizer["Total Revenue"]</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model.SalesByCategory)
-                    {
-                        <tr>
-                            <td>@item.CategoryName</td>
-                            <td>@item.QuantitySold</td>
-                            <td>@item.TotalRevenue.ToEuro()</td>
-                        </tr>
-                    }
-                </tbody>
-                <tfoot>
-                    <tr class="table-light fw-bold">
-                        <td>@Localizer["Total"]</td>
-                        <td>@Model.SalesByCategory.Sum(i => i.QuantitySold)</td>
-                        <td>@Model.SalesByCategory.Sum(i => i.TotalRevenue).ToEuro()</td>
-                    </tr>
-                </tfoot>
-            </table>
-        }
+<div class="card mb-4">
+    <div class="card-body">
+        <form asp-action="Index" method="get" class="row g-3 align-items-end">
+            <div class="col-auto">
+                <label asp-for="Filter.StartDate" class="form-label">@Localizer["Start Date"]</label>
+                <input asp-for="Filter.StartDate" class="form-control" />
+            </div>
+            <div class="col-auto">
+                <label asp-for="Filter.EndDate" class="form-label">@Localizer["End Date"]</label>
+                <input asp-for="Filter.EndDate" class="form-control" />
+            </div>
+            <div class="col-auto">
+                <label asp-for="Filter.Grouping" class="form-label">@Localizer["Group By"]</label>
+                <select asp-for="Filter.Grouping" asp-items="groupingOptions" class="form-select"></select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">@Localizer["Filter"]</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">@Localizer["Clear"]</a>
+            </div>
+        </form>
     </div>
 </div>
+
+<ul class="nav nav-tabs mb-4" id="reportsTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="sales-tab" data-bs-toggle="tab" data-bs-target="#sales-pane" type="button" role="tab" aria-controls="sales-pane" aria-selected="true">
+            @Localizer["Sales Reports"]
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="purchases-tab" data-bs-toggle="tab" data-bs-target="#purchases-pane" type="button" role="tab" aria-controls="purchases-pane" aria-selected="false">
+            @Localizer["Purchase Reports"]
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="reportsTabContent">
+    <div class="tab-pane fade show active" id="sales-pane" role="tabpanel" aria-labelledby="sales-tab">
+        <div class="row g-3 mb-4">
+            <div class="col-md-6 col-xl-3">
+                <div class="card kpi-card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-1">@Localizer["Total Revenue"]</h6>
+                            <p class="card-text fs-4 fw-bold mb-0">@totalRevenue.ToEuro()</p>
+                        </div>
+                        <i class="bi bi-currency-exchange kpi-icon text-success"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="card kpi-card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-1">@Localizer["Total Orders"]</h6>
+                            <p class="card-text fs-4 fw-bold mb-0">@totalOrders</p>
+                        </div>
+                        <i class="bi bi-cart-check kpi-icon text-primary"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="card kpi-card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-1">@Localizer["Quantity Sold"]</h6>
+                            <p class="card-text fs-4 fw-bold mb-0">@totalQuantitySold</p>
+                        </div>
+                        <i class="bi bi-boxes kpi-icon text-info"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="card kpi-card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-1">@Localizer["Top Category"]</h6>
+                            <p class="card-text fs-4 fw-bold mb-0">@(topCategory?.CategoryName ?? "-")</p>
+                        </div>
+                        <i class="bi bi-award kpi-icon text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.SalesByPeriod.Count > 0 || Model.SalesByCategory.Count > 0)
+        {
+            <div class="row g-3 mb-4">
+                <div class="col-lg-7">
+                    <div class="card chart-card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted mb-3">@Localizer["Sales by Period"]</h6>
+                            <canvas id="salesByPeriodChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="card chart-card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted mb-3">@Localizer["Sales by Category"]</h6>
+                            <canvas id="salesByCategoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <h4 class="mb-3">@Localizer["Sales by Period"]</h4>
+                @if (Model.SalesByPeriod.Count == 0)
+                {
+                    <p class="text-muted">@Localizer["No sales found for the selected range."]</p>
+                }
+                else
+                {
+                    <table id="salesByPeriodTable" class="table table-striped table-bordered align-middle w-100">
+                        <thead class="table-light">
+                            <tr>
+                                <th>@Localizer["Period"]</th>
+                                <th>@Localizer["Order Count"]</th>
+                                <th>@Localizer["Total Revenue"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.SalesByPeriod)
+                            {
+                                <tr>
+                                    <td>@item.PeriodLabel</td>
+                                    <td>@item.OrderCount</td>
+                                    <td data-order="@item.TotalRevenue">@item.TotalRevenue.ToEuro()</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-light fw-bold">
+                                <td>@Localizer["Total"]</td>
+                                <td>@totalOrders</td>
+                                <td>@totalRevenue.ToEuro()</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                }
+            </div>
+
+            <div class="col-lg-6 mb-4">
+                <h4 class="mb-3">@Localizer["Sales by Category"]</h4>
+                @if (Model.SalesByCategory.Count == 0)
+                {
+                    <p class="text-muted">@Localizer["No sales found for the selected range."]</p>
+                }
+                else
+                {
+                    <table id="salesByCategoryTable" class="table table-striped table-bordered align-middle w-100">
+                        <thead class="table-light">
+                            <tr>
+                                <th>@Localizer["Category"]</th>
+                                <th>@Localizer["Quantity Sold"]</th>
+                                <th>@Localizer["Total Revenue"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.SalesByCategory)
+                            {
+                                <tr>
+                                    <td>@item.CategoryName</td>
+                                    <td>@item.QuantitySold</td>
+                                    <td data-order="@item.TotalRevenue">@item.TotalRevenue.ToEuro()</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-light fw-bold">
+                                <td>@Localizer["Total"]</td>
+                                <td>@totalQuantitySold</td>
+                                <td>@Model.SalesByCategory.Sum(i => i.TotalRevenue).ToEuro()</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="purchases-pane" role="tabpanel" aria-labelledby="purchases-tab">
+        <div class="row g-3 mb-4">
+            <div class="col-md-6 col-xl-3">
+                <div class="card kpi-card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-1">@Localizer["Total Spend"]</h6>
+                            <p class="card-text fs-4 fw-bold mb-0">@totalSpend.ToEuro()</p>
+                        </div>
+                        <i class="bi bi-cash-stack kpi-icon text-danger"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="card kpi-card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-1">@Localizer["Total Purchase Orders"]</h6>
+                            <p class="card-text fs-4 fw-bold mb-0">@totalPurchaseOrders</p>
+                        </div>
+                        <i class="bi bi-truck kpi-icon text-primary"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="card kpi-card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-1">@Localizer["Quantity Purchased"]</h6>
+                            <p class="card-text fs-4 fw-bold mb-0">@totalQuantityPurchased</p>
+                        </div>
+                        <i class="bi bi-boxes kpi-icon text-info"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="card kpi-card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-1">@Localizer["Top Supplier"]</h6>
+                            <p class="card-text fs-4 fw-bold mb-0">@(topSupplier?.SupplierName ?? "-")</p>
+                        </div>
+                        <i class="bi bi-award kpi-icon text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.PurchasesByPeriod.Count > 0 || Model.PurchasesBySupplier.Count > 0)
+        {
+            <div class="row g-3 mb-4">
+                <div class="col-lg-7">
+                    <div class="card chart-card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted mb-3">@Localizer["Purchases by Period"]</h6>
+                            <canvas id="purchasesByPeriodChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="card chart-card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted mb-3">@Localizer["Purchases by Supplier"]</h6>
+                            <canvas id="purchasesBySupplierChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <h4 class="mb-3">@Localizer["Purchases by Period"]</h4>
+                @if (Model.PurchasesByPeriod.Count == 0)
+                {
+                    <p class="text-muted">@Localizer["No purchases found for the selected range."]</p>
+                }
+                else
+                {
+                    <table id="purchasesByPeriodTable" class="table table-striped table-bordered align-middle w-100">
+                        <thead class="table-light">
+                            <tr>
+                                <th>@Localizer["Period"]</th>
+                                <th>@Localizer["Purchase Order Count"]</th>
+                                <th>@Localizer["Total Spend"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.PurchasesByPeriod)
+                            {
+                                <tr>
+                                    <td>@item.PeriodLabel</td>
+                                    <td>@item.PurchaseOrderCount</td>
+                                    <td data-order="@item.TotalSpend">@item.TotalSpend.ToEuro()</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-light fw-bold">
+                                <td>@Localizer["Total"]</td>
+                                <td>@totalPurchaseOrders</td>
+                                <td>@totalSpend.ToEuro()</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                }
+            </div>
+
+            <div class="col-lg-6 mb-4">
+                <h4 class="mb-3">@Localizer["Purchases by Supplier"]</h4>
+                @if (Model.PurchasesBySupplier.Count == 0)
+                {
+                    <p class="text-muted">@Localizer["No purchases found for the selected range."]</p>
+                }
+                else
+                {
+                    <table id="purchasesBySupplierTable" class="table table-striped table-bordered align-middle w-100">
+                        <thead class="table-light">
+                            <tr>
+                                <th>@Localizer["Supplier"]</th>
+                                <th>@Localizer["Quantity Purchased"]</th>
+                                <th>@Localizer["Total Spend"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.PurchasesBySupplier)
+                            {
+                                <tr>
+                                    <td>@item.SupplierName</td>
+                                    <td>@item.QuantityPurchased</td>
+                                    <td data-order="@item.TotalSpend">@item.TotalSpend.ToEuro()</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-light fw-bold">
+                                <td>@Localizer["Total"]</td>
+                                <td>@totalQuantityPurchased</td>
+                                <td>@Model.PurchasesBySupplier.Sum(i => i.TotalSpend).ToEuro()</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script>
+        $(function () {
+            var chartPalette = ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#6f42c1', '#0dcaf0', '#fd7e14', '#20c997'];
+            var purchasesByPeriodChart = null;
+            var purchasesBySupplierChart = null;
+
+            @if (Model.SalesByPeriod.Count > 0)
+            {
+                <text>
+                const periodLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SalesByPeriod.Select(i => i.PeriodLabel)));
+                const periodRevenue = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SalesByPeriod.Select(i => i.TotalRevenue)));
+                const periodColors = periodLabels.map(function (_, i) { return chartPalette[i % chartPalette.length]; });
+
+                new Chart(document.getElementById('salesByPeriodChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: periodLabels,
+                        datasets: [{
+                            label: '@Html.Raw(Localizer["Revenue (€)"])',
+                            data: periodRevenue,
+                            backgroundColor: periodColors,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+                </text>
+            }
+
+            @if (Model.SalesByCategory.Count > 0)
+            {
+                <text>
+                const categoryLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SalesByCategory.Select(i => i.CategoryName)));
+                const categoryRevenue = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SalesByCategory.Select(i => i.TotalRevenue)));
+                const categoryColors = categoryLabels.map(function (_, i) { return chartPalette[i % chartPalette.length]; });
+
+                new Chart(document.getElementById('salesByCategoryChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: categoryLabels,
+                        datasets: [{
+                            data: categoryRevenue,
+                            backgroundColor: categoryColors
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+                </text>
+            }
+
+            @if (Model.PurchasesByPeriod.Count > 0)
+            {
+                <text>
+                const purchasePeriodLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PurchasesByPeriod.Select(i => i.PeriodLabel)));
+                const purchasePeriodSpend = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PurchasesByPeriod.Select(i => i.TotalSpend)));
+                const purchasePeriodColors = purchasePeriodLabels.map(function (_, i) { return chartPalette[i % chartPalette.length]; });
+
+                purchasesByPeriodChart = new Chart(document.getElementById('purchasesByPeriodChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: purchasePeriodLabels,
+                        datasets: [{
+                            label: '@Html.Raw(Localizer["Spend (€)"])',
+                            data: purchasePeriodSpend,
+                            backgroundColor: purchasePeriodColors,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+                </text>
+            }
+
+            @if (Model.PurchasesBySupplier.Count > 0)
+            {
+                <text>
+                const supplierLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PurchasesBySupplier.Select(i => i.SupplierName)));
+                const supplierSpend = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PurchasesBySupplier.Select(i => i.TotalSpend)));
+                const supplierColors = supplierLabels.map(function (_, i) { return chartPalette[i % chartPalette.length]; });
+
+                purchasesBySupplierChart = new Chart(document.getElementById('purchasesBySupplierChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: supplierLabels,
+                        datasets: [{
+                            data: supplierSpend,
+                            backgroundColor: supplierColors
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+                </text>
+            }
+
+            $.fn.dataTable.Buttons.defaults.dom.button.className = 'btn btn-outline-secondary btn-sm me-1';
+
+            var reportTableOptions = {
+                language: window.dataTableLanguage,
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="bi bi-file-earmark-excel"></i> ' + window.dataTableButtonLabels.excel
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: '<i class="bi bi-file-earmark-pdf"></i> ' + window.dataTableButtonLabels.pdf
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="bi bi-printer"></i> ' + window.dataTableButtonLabels.print
+                    }
+                ]
+            };
+
+            if ($('#salesByPeriodTable').length) {
+                $('#salesByPeriodTable').DataTable(reportTableOptions);
+            }
+            if ($('#salesByCategoryTable').length) {
+                $('#salesByCategoryTable').DataTable(reportTableOptions);
+            }
+
+            var purchasesByPeriodTable = $('#purchasesByPeriodTable').length ? $('#purchasesByPeriodTable').DataTable(reportTableOptions) : null;
+            var purchasesBySupplierTable = $('#purchasesBySupplierTable').length ? $('#purchasesBySupplierTable').DataTable(reportTableOptions) : null;
+
+            // Charts and DataTables render at zero width while their tab pane is hidden,
+            // so recalculate both once the Purchase Reports tab actually becomes visible.
+            document.getElementById('purchases-tab').addEventListener('shown.bs.tab', function () {
+                if (purchasesByPeriodChart) purchasesByPeriodChart.resize();
+                if (purchasesBySupplierChart) purchasesBySupplierChart.resize();
+                if (purchasesByPeriodTable) purchasesByPeriodTable.columns.adjust();
+                if (purchasesBySupplierTable) purchasesBySupplierTable.columns.adjust();
+            });
+        });
+    </script>
+}

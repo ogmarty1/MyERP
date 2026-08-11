@@ -3,6 +3,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ERP.DataAccess.Models
 {
+    public enum ProductStatus
+    {
+        Active,
+        Discontinued,
+        OutOfStock
+    }
+
     public class Product
     {
         public int Id { get; set; }
@@ -29,6 +36,11 @@ namespace ERP.DataAccess.Models
         public int MinimumQuantity { get; set; }
 
         public bool IsActive { get; set; } = true;
+
+        public ProductStatus Status { get; set; } = ProductStatus.Active;
+
+        [StringLength(1000)]
+        public string? Notes { get; set; }
 
         // Foreign Key към Category
         public int CategoryId { get; set; }

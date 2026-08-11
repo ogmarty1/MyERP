@@ -18,6 +18,12 @@ namespace ERP.DataAccess.Configurations
                 .WithMany()
                 .HasForeignKey(im => im.OrderId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // PurchaseOrder е опционален - само движенията от получени доставки го задават
+            builder.HasOne(im => im.PurchaseOrder)
+                .WithMany()
+                .HasForeignKey(im => im.PurchaseOrderId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

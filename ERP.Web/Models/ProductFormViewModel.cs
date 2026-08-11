@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using ERP.DataAccess.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace ERP.Web.Models
@@ -39,6 +40,12 @@ namespace ERP.Web.Models
 
         [Display(Name = "Active")]
         public bool IsActive { get; set; } = true;
+
+        [Display(Name = "Status")]
+        public ProductStatus Status { get; set; } = ProductStatus.Active;
+
+        [StringLength(1000, ErrorMessage = "Notes cannot exceed 1000 characters.")]
+        public string? Notes { get; set; }
 
         [Required(ErrorMessage = "Please select a category.")]
         [Display(Name = "Category")]

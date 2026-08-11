@@ -1,0 +1,157 @@
+@model ERP.Web.Models.SupplierDetailsViewModel
+@using ERP.DataAccess.Models
+
+@{
+    ViewData["Title"] = Model.Form.Name;
+    var forceEdit = ViewData["ForceEditMode"] is true;
+
+    string BadgeClass(PurchaseOrderStatus status) => status switch
+    {
+        PurchaseOrderStatus.Ordered => "bg-warning text-dark",
+        PurchaseOrderStatus.Received => "bg-success",
+        _ => "bg-secondary"
+    };
+
+    string StatusText(PurchaseOrderStatus status) => status switch
+    {
+        PurchaseOrderStatus.Ordered => Localizer["Ordered"],
+        PurchaseOrderStatus.Received => Localizer["Received"],
+        _ => status.ToString()
+    };
+}
+
+<div class="js-details-form-wrapper" data-force-edit="@(forceEdit ? "true" : "false")">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>@Model.Form.Name</h1>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary">@Localizer["Back to Suppliers"]</a>
+            <span class="js-view-actions">
+                <button type="button" class="btn btn-primary js-edit-toggle">@Localizer["Edit"]</button>
+                <form asp-action="Delete" asp-route-id="@Model.Form.Id" method="post" class="d-inline js-delete-form"
+                      data-confirm-title="@Localizer["Delete Supplier"]"
+                      data-confirm-text="@Localizer["Are you sure you want to delete this supplier?"] @Localizer["This action cannot be undone."]"
+                      data-confirm-button="@Localizer["Yes, delete it"]"
+                      data-cancel-button="@Localizer["Cancel"]">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-danger">
+                        <i class="bi bi-trash"></i> @Localizer["Delete"]
+                    </button>
+                </form>
+            </span>
+            <span class="js-edit-actions d-none">
+                <button type="submit" form="supplierDetailsForm" class="btn btn-success">@Localizer["Save"]</button>
+                <button type="button" class="btn btn-outline-secondary js-edit-cancel">@Localizer["Cancel"]</button>
+            </span>
+        </div>
+    </div>
+
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <form id="supplierDetailsForm" asp-action="Edit" asp-route-id="@Model.Form.Id" method="post" class="js-details-form">
+        <input type="hidden" asp-for="Form.Id" />
+
+        <div class="row">
+            <div class="col-lg-6">
+                <fieldset class="erp-field-group erp-field-group--primary">
+                    <legend>@Localizer["Basic Info"]</legend>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Form.Name" class="form-label">@Localizer["Name"]</label>
+                            <input asp-for="Form.Name" class="form-control erp-editable" readonly />
+                            <span asp-validation-for="Form.Name" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Form.CompanyName" class="form-label">@Localizer["Company Name"]</label>
+                            <input asp-for="Form.CompanyName" class="form-control erp-editable" readonly />
+                            <span asp-validation-for="Form.CompanyName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Form.ContactPerson" class="form-label">@Localizer["Contact Person"]</label>
+                            <input asp-for="Form.ContactPerson" class="form-control erp-editable" readonly />
+                            <span asp-validation-for="Form.ContactPerson" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Form.TaxNumber" class="form-label">@Localizer["Tax Number"]</label>
+                            <input asp-for="Form.TaxNumber" class="form-control erp-editable" readonly />
+                            <span asp-validation-for="Form.TaxNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+            <div class="col-lg-6">
+                <fieldset class="erp-field-group erp-field-group--info">
+                    <legend>@Localizer["Contact Info"]</legend>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Form.Phone" class="form-label">@Localizer["Phone"]</label>
+                            <input asp-for="Form.Phone" class="form-control erp-editable" readonly />
+                            <span asp-validation-for="Form.Phone" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Form.Email" class="form-label">@Localizer["Email"]</label>
+                            <input asp-for="Form.Email" class="form-control erp-editable" readonly />
+                            <span asp-validation-for="Form.Email" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input asp-for="Form.IsActive" class="form-check-input erp-editable" disabled />
+                                <label asp-for="Form.IsActive" class="form-check-label">@Localizer["Active"]</label>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </form>
+
+    <fieldset class="erp-field-group erp-field-group--success">
+        <legend>@Localizer["Purchase Order History"]</legend>
+        @if (Model.PurchaseOrderHistory.Count == 0)
+        {
+            <p class="text-muted mb-0">@Localizer["This supplier has no purchase orders yet."]</p>
+        }
+        else
+        {
+            <table id="supplierPurchaseOrdersTable" class="table table-striped table-bordered align-middle w-100">
+                <thead class="table-light">
+                    <tr>
+                        <th>@Localizer["PO ID"]</th>
+                        <th>@Localizer["Order Date"]</th>
+                        <th>@Localizer["Total Amount"]</th>
+                        <th>@Localizer["Status"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var po in Model.PurchaseOrderHistory)
+                    {
+                        <tr>
+                            <td><a asp-controller="PurchaseOrders" asp-action="Details" asp-route-id="@po.Id">@po.Id</a></td>
+                            <td data-order="@po.OrderDate.ToString("o")">@po.OrderDate.ToLocalTime().ToString("g")</td>
+                            <td data-order="@po.TotalAmount">@po.TotalAmount.ToEuro()</td>
+                            <td><span class="badge @BadgeClass(po.Status)">@StatusText(po.Status)</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </fieldset>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script>
+        $(function () {
+            if ($('.js-details-form-wrapper').data('force-edit')) {
+                $('.js-edit-toggle').trigger('click');
+            }
+
+            if ($('#supplierPurchaseOrdersTable').length) {
+                $('#supplierPurchaseOrdersTable').DataTable({
+                    language: window.dataTableLanguage,
+                    order: [[1, 'desc']]
+                });
+            }
+        });
+    </script>
+}

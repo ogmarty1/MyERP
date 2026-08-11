@@ -1,0 +1,104 @@
+@model ERP.Web.Models.CategoryDetailsViewModel
+
+@{
+    ViewData["Title"] = Model.Form.Name;
+    var forceEdit = ViewData["ForceEditMode"] is true;
+}
+
+<div class="js-details-form-wrapper" data-force-edit="@(forceEdit ? "true" : "false")">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>@Model.Form.Name</h1>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary">@Localizer["Back to Categories"]</a>
+            <span class="js-view-actions">
+                <button type="button" class="btn btn-primary js-edit-toggle">@Localizer["Edit"]</button>
+                <form asp-action="Delete" asp-route-id="@Model.Form.Id" method="post" class="d-inline js-delete-form"
+                      data-confirm-title="@Localizer["Delete Category"]"
+                      data-confirm-text="@Localizer["Are you sure you want to delete this category?"] @Localizer["This action cannot be undone."]"
+                      data-confirm-button="@Localizer["Yes, delete it"]"
+                      data-cancel-button="@Localizer["Cancel"]">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-danger">
+                        <i class="bi bi-trash"></i> @Localizer["Delete"]
+                    </button>
+                </form>
+            </span>
+            <span class="js-edit-actions d-none">
+                <button type="submit" form="categoryDetailsForm" class="btn btn-success">@Localizer["Save"]</button>
+                <button type="button" class="btn btn-outline-secondary js-edit-cancel">@Localizer["Cancel"]</button>
+            </span>
+        </div>
+    </div>
+
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <form id="categoryDetailsForm" asp-action="Edit" asp-route-id="@Model.Form.Id" method="post" class="js-details-form">
+        <input type="hidden" asp-for="Form.Id" />
+
+        <fieldset class="erp-field-group erp-field-group--primary">
+            <legend>@Localizer["Basic Info"]</legend>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Form.Name" class="form-label">@Localizer["Name"]</label>
+                    <input asp-for="Form.Name" class="form-control erp-editable" readonly />
+                    <span asp-validation-for="Form.Name" class="text-danger"></span>
+                </div>
+                <div class="col-12 mb-3">
+                    <label asp-for="Form.Description" class="form-label">@Localizer["Description"]</label>
+                    <textarea asp-for="Form.Description" class="form-control erp-editable" rows="3" readonly></textarea>
+                    <span asp-validation-for="Form.Description" class="text-danger"></span>
+                </div>
+            </div>
+        </fieldset>
+    </form>
+
+    <fieldset class="erp-field-group erp-field-group--success">
+        <legend>@Localizer["Assigned Products"]</legend>
+        @if (Model.Products.Count == 0)
+        {
+            <p class="text-muted mb-0">@Localizer["No products are assigned to this category yet."]</p>
+        }
+        else
+        {
+            <table id="categoryProductsTable" class="table table-striped table-bordered align-middle w-100">
+                <thead class="table-light">
+                    <tr>
+                        <th>@Localizer["SKU"]</th>
+                        <th>@Localizer["Name"]</th>
+                        <th>@Localizer["Sale Price"]</th>
+                        <th>@Localizer["Quantity In Stock"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var product in Model.Products)
+                    {
+                        <tr>
+                            <td><a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id">@product.SKU</a></td>
+                            <td>@product.Name</td>
+                            <td data-order="@product.SalePrice">@product.SalePrice.ToEuro()</td>
+                            <td>@product.QuantityInStock</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </fieldset>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script>
+        $(function () {
+            if ($('.js-details-form-wrapper').data('force-edit')) {
+                $('.js-edit-toggle').trigger('click');
+            }
+
+            if ($('#categoryProductsTable').length) {
+                $('#categoryProductsTable').DataTable({
+                    language: window.dataTableLanguage,
+                    order: [[1, 'asc']]
+                });
+            }
+        });
+    </script>
+}

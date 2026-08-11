@@ -10,14 +10,9 @@ namespace ERP.Web.Models
         [Display(Name = "Customer")]
         public int CustomerId { get; set; }
 
-        [Required(ErrorMessage = "Please select who is creating this order.")]
-        [Display(Name = "Created By")]
-        public int UserId { get; set; }
-
         public List<OrderLineFormViewModel> Lines { get; set; } = new();
 
         public IEnumerable<SelectListItem> Customers { get; set; } = new List<SelectListItem>();
-        public IEnumerable<SelectListItem> Users { get; set; } = new List<SelectListItem>();
         public List<Product> ProductCatalog { get; set; } = new();
     }
 

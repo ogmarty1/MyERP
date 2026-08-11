@@ -14,24 +14,51 @@ namespace ERP.Web.Controllers
         private readonly IProductService _productService;
         private readonly ICategoryService _categoryService;
         private readonly ISupplierService _supplierService;
+        private readonly IInventoryService _inventoryService;
         private readonly IStringLocalizer<SharedResource> _localizer;
 
         public ProductsController(
             IProductService productService,
             ICategoryService categoryService,
             ISupplierService supplierService,
+            IInventoryService inventoryService,
             IStringLocalizer<SharedResource> localizer)
         {
             _productService = productService;
             _categoryService = categoryService;
             _supplierService = supplierService;
+            _inventoryService = inventoryService;
             _localizer = localizer;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(ProductsFilterViewModel filter)
         {
-            var products = await _productService.GetAllAsync();
-            return View(products);
+            var products = await _productService.GetFilteredAsync(new ProductFilterRequest
+            {
+                Keyword = filter.Keyword,
+                CategoryId = filter.CategoryId,
+                SupplierId = filter.SupplierId,
+                MinPrice = filter.MinPrice,
+                MaxPrice = filter.MaxPrice,
+                MinStock = filter.MinStock,
+                MaxStock = filter.MaxStock,
+                Status = filter.Status,
+                LowStockOnly = filter.LowStockOnly
+            });
+
+            await PopulateFilterDropdownsAsync(filter);
+
+            return View(new ProductsIndexViewModel { Filter = filter, Products = products });
+        }
+
+        public async Task<IActionResult> Details(int id)
+        {
+            var product = await _productService.GetByIdAsync(id);
+            if (product == null)
+                return NotFound();
+
+            var viewModel = await BuildDetailsViewModelAsync(product);
+            return View(viewModel);
         }
 
         [Authorize(Roles = "Manager,Admin")]
@@ -63,6 +90,8 @@ namespace ERP.Web.Controllers
                 QuantityInStock = model.QuantityInStock,
                 MinimumQuantity = model.MinimumQuantity,
                 IsActive = model.IsActive,
+                Status = model.Status,
+                Notes = model.Notes,
                 CategoryId = model.CategoryId,
                 SupplierId = model.SupplierId
             });
@@ -71,44 +100,23 @@ namespace ERP.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [Authorize(Roles = "Manager,Admin")]
-        public async Task<IActionResult> Edit(int id)
-        {
-            var product = await _productService.GetByIdAsync(id);
-            if (product == null)
-                return NotFound();
-
-            var viewModel = new ProductFormViewModel
-            {
-                Id = product.Id,
-                Name = product.Name,
-                Description = product.Description,
-                SKU = product.SKU,
-                PurchasePrice = product.PurchasePrice,
-                SalePrice = product.SalePrice,
-                QuantityInStock = product.QuantityInStock,
-                MinimumQuantity = product.MinimumQuantity,
-                IsActive = product.IsActive,
-                CategoryId = product.CategoryId,
-                SupplierId = product.SupplierId
-            };
-
-            await PopulateDropdownsAsync(viewModel);
-            return View(viewModel);
-        }
-
         [HttpPost]
         [Authorize(Roles = "Manager,Admin")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, ProductFormViewModel model)
+        public async Task<IActionResult> Edit(int id, [Bind(Prefix = "Form")] ProductFormViewModel model)
         {
             if (id != model.Id)
                 return BadRequest();
 
             if (!ModelState.IsValid)
             {
-                await PopulateDropdownsAsync(model);
-                return View(model);
+                var product = await _productService.GetByIdAsync(id);
+                if (product == null)
+                    return NotFound();
+
+                var viewModel = await BuildDetailsViewModelAsync(product, model);
+                ViewData["ForceEditMode"] = true;
+                return View("Details", viewModel);
             }
 
             await _productService.UpdateAsync(new UpdateProductRequest
@@ -122,12 +130,14 @@ namespace ERP.Web.Controllers
                 QuantityInStock = model.QuantityInStock,
                 MinimumQuantity = model.MinimumQuantity,
                 IsActive = model.IsActive,
+                Status = model.Status,
+                Notes = model.Notes,
                 CategoryId = model.CategoryId,
                 SupplierId = model.SupplierId
             });
 
             TempData["SuccessMessage"] = _localizer["Product \"{0}\" was updated successfully.", model.Name].Value;
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         [HttpPost]
@@ -142,11 +152,74 @@ namespace ERP.Web.Controllers
             catch (DbUpdateException)
             {
                 TempData["ErrorMessage"] = _localizer["This product cannot be deleted because it has existing order history."].Value;
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Details), new { id });
             }
 
             TempData["SuccessMessage"] = _localizer["Product was deleted successfully."].Value;
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Manager,Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdjustInventory(AdjustInventoryFormViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = _localizer["Please provide a valid quantity for the inventory adjustment."].Value;
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                await _inventoryService.AdjustStockAsync(new ManualStockAdjustmentRequest
+                {
+                    ProductId = model.ProductId,
+                    Quantity = model.Quantity,
+                    MovementType = model.MovementType,
+                    Reason = model.Reason
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
+
+            TempData["SuccessMessage"] = _localizer["Inventory was adjusted successfully."].Value;
+            return RedirectToAction(nameof(Index));
+        }
+
+        private async Task<ProductDetailsViewModel> BuildDetailsViewModelAsync(
+            ERP.DataAccess.Models.Product product,
+            ProductFormViewModel? formOverride = null)
+        {
+            var form = formOverride ?? new ProductFormViewModel
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                SKU = product.SKU,
+                PurchasePrice = product.PurchasePrice,
+                SalePrice = product.SalePrice,
+                QuantityInStock = product.QuantityInStock,
+                MinimumQuantity = product.MinimumQuantity,
+                IsActive = product.IsActive,
+                Status = product.Status,
+                Notes = product.Notes,
+                CategoryId = product.CategoryId,
+                SupplierId = product.SupplierId
+            };
+
+            await PopulateDropdownsAsync(form);
+
+            var orderHistory = await _productService.GetOrderHistoryAsync(product.Id);
+
+            return new ProductDetailsViewModel
+            {
+                Form = form,
+                OrderHistory = orderHistory
+            };
         }
 
         private async Task PopulateDropdownsAsync(ProductFormViewModel model)
@@ -156,6 +229,15 @@ namespace ERP.Web.Controllers
 
             model.Categories = categories.Select(c => new SelectListItem(c.Name, c.Id.ToString()));
             model.Suppliers = suppliers.Select(s => new SelectListItem(s.Name, s.Id.ToString()));
+        }
+
+        private async Task PopulateFilterDropdownsAsync(ProductsFilterViewModel filter)
+        {
+            var categories = await _categoryService.GetAllAsync();
+            var suppliers = await _supplierService.GetAllAsync();
+
+            filter.Categories = categories.Select(c => new SelectListItem(c.Name, c.Id.ToString()));
+            filter.Suppliers = suppliers.Select(s => new SelectListItem(s.Name, s.Id.ToString()));
         }
     }
 }

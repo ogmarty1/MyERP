@@ -23,12 +23,63 @@ namespace ERP.BusinessLogic.Services
                 .ToListAsync();
         }
 
+        public async Task<List<Product>> GetFilteredAsync(ProductFilterRequest filter)
+        {
+            var query = _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Supplier)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filter.Keyword))
+            {
+                var keyword = filter.Keyword.Trim();
+                query = query.Where(p =>
+                    EF.Functions.Like(p.Name, $"%{keyword}%") ||
+                    EF.Functions.Like(p.SKU, $"%{keyword}%"));
+            }
+
+            if (filter.CategoryId.HasValue)
+                query = query.Where(p => p.CategoryId == filter.CategoryId.Value);
+
+            if (filter.SupplierId.HasValue)
+                query = query.Where(p => p.SupplierId == filter.SupplierId.Value);
+
+            if (filter.MinPrice.HasValue)
+                query = query.Where(p => p.SalePrice >= filter.MinPrice.Value);
+
+            if (filter.MaxPrice.HasValue)
+                query = query.Where(p => p.SalePrice <= filter.MaxPrice.Value);
+
+            if (filter.MinStock.HasValue)
+                query = query.Where(p => p.QuantityInStock >= filter.MinStock.Value);
+
+            if (filter.MaxStock.HasValue)
+                query = query.Where(p => p.QuantityInStock <= filter.MaxStock.Value);
+
+            if (filter.Status.HasValue)
+                query = query.Where(p => p.Status == filter.Status.Value);
+
+            if (filter.LowStockOnly)
+                query = query.Where(p => p.QuantityInStock <= p.MinimumQuantity);
+
+            return await query.OrderBy(p => p.Name).ToListAsync();
+        }
+
         public async Task<Product?> GetByIdAsync(int id)
         {
             return await _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Supplier)
                 .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        public async Task<List<Order>> GetOrderHistoryAsync(int productId)
+        {
+            return await _context.Orders
+                .Where(o => o.OrderDetails.Any(od => od.ProductId == productId))
+                .Include(o => o.Customer)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
         }
 
         public async Task<Product> CreateAsync(CreateProductRequest request)
@@ -43,6 +94,8 @@ namespace ERP.BusinessLogic.Services
                 QuantityInStock = request.QuantityInStock,
                 MinimumQuantity = request.MinimumQuantity,
                 IsActive = request.IsActive,
+                Status = request.Status,
+                Notes = request.Notes,
                 CategoryId = request.CategoryId,
                 SupplierId = request.SupplierId
             };
@@ -66,6 +119,8 @@ namespace ERP.BusinessLogic.Services
             product.QuantityInStock = request.QuantityInStock;
             product.MinimumQuantity = request.MinimumQuantity;
             product.IsActive = request.IsActive;
+            product.Status = request.Status;
+            product.Notes = request.Notes;
             product.CategoryId = request.CategoryId;
             product.SupplierId = request.SupplierId;
 

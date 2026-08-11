@@ -15,23 +15,44 @@ namespace ERP.BusinessLogic.Services
 
         public async Task<InventoryMovement> AdjustStockAsync(ManualStockAdjustmentRequest request)
         {
-            if (request.Quantity <= 0)
+            if (request.MovementType == MovementType.Adjustment && request.Quantity < 0)
+                throw new InvalidOperationException("The new stock level cannot be negative.");
+
+            if (request.MovementType != MovementType.Adjustment && request.Quantity <= 0)
                 throw new InvalidOperationException("Adjustment quantity must be greater than zero.");
 
             var product = await _context.Products.FindAsync(request.ProductId)
                 ?? throw new InvalidOperationException($"Product with Id {request.ProductId} was not found.");
 
-            // Ръчна корекция без поръчка - OrderId остава null
-            var signedQuantity = request.MovementType == MovementType.Inflow
-                ? request.Quantity
-                : -request.Quantity;
-            product.QuantityInStock += signedQuantity;
+            int loggedQuantity;
 
+            if (request.MovementType == MovementType.Adjustment)
+            {
+                // Adjustment: Quantity is the new absolute stock level (e.g. after a physical count).
+                loggedQuantity = request.Quantity - product.QuantityInStock;
+                product.QuantityInStock = request.Quantity;
+            }
+            else if (request.MovementType == MovementType.Outflow)
+            {
+                if (request.Quantity > product.QuantityInStock)
+                    throw new InvalidOperationException("Cannot remove more stock than is currently available.");
+
+                loggedQuantity = request.Quantity;
+                product.QuantityInStock -= request.Quantity;
+            }
+            else
+            {
+                loggedQuantity = request.Quantity;
+                product.QuantityInStock += request.Quantity;
+            }
+
+            // Ръчна корекция без поръчка - OrderId остава null
             var movement = new InventoryMovement
             {
                 ProductId = request.ProductId,
-                Quantity = request.Quantity,
+                Quantity = loggedQuantity,
                 MovementType = request.MovementType,
+                Reason = request.Reason,
                 Date = DateTime.UtcNow,
                 OrderId = null
             };

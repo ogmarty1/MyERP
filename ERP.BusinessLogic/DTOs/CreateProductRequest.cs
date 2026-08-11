@@ -1,3 +1,5 @@
+using ERP.DataAccess.Models;
+
 namespace ERP.BusinessLogic.DTOs
 {
     public class CreateProductRequest
@@ -10,6 +12,8 @@ namespace ERP.BusinessLogic.DTOs
         public int QuantityInStock { get; set; }
         public int MinimumQuantity { get; set; }
         public bool IsActive { get; set; } = true;
+        public ProductStatus Status { get; set; } = ProductStatus.Active;
+        public string? Notes { get; set; }
         public int CategoryId { get; set; }
         public int? SupplierId { get; set; }
     }

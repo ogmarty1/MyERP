@@ -51,4 +51,29 @@ $(function () {
         $btn.prop('disabled', true);
         $btn.prepend('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>');
     });
+
+    // Generic view/edit toggle for Details pages. Markup contract:
+    // - a wrapper with class .js-details-form-wrapper
+    // - inside it, a <form class="js-details-form"> whose editable inputs/selects/textareas
+    //   carry class .erp-editable and start out disabled/readonly
+    // - a .js-view-actions block (Edit button) and a .js-edit-actions block (Save/Cancel), one hidden at a time
+    $(document).on('click', '.js-edit-toggle', function () {
+        var $wrapper = $(this).closest('.js-details-form-wrapper');
+        $wrapper.find('.js-details-form').addClass('editing')
+            .find('.erp-editable').prop('disabled', false).prop('readonly', false);
+        $wrapper.find('.js-view-actions').addClass('d-none');
+        $wrapper.find('.js-edit-actions').removeClass('d-none');
+    });
+
+    $(document).on('click', '.js-edit-cancel', function () {
+        var $wrapper = $(this).closest('.js-details-form-wrapper');
+        var form = $wrapper.find('.js-details-form').get(0);
+        if (form) {
+            form.reset();
+        }
+        $wrapper.find('.js-details-form').removeClass('editing')
+            .find('.erp-editable').prop('disabled', true).prop('readonly', true);
+        $wrapper.find('.js-edit-actions').addClass('d-none');
+        $wrapper.find('.js-view-actions').removeClass('d-none');
+    });
 });

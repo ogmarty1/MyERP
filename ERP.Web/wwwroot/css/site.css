@@ -44,3 +44,56 @@ body {
   color: #0d6efd !important;
   border-bottom: 2px solid #0d6efd;
 }
+
+/* Reusable colorful field-group fieldset (floating title overlaid on the top border),
+   used by Details/view-edit pages (Products, Orders, and future Customers/Suppliers/Categories). */
+.erp-field-group {
+  border: 2px solid #dee2e6;
+  border-radius: 0.5rem;
+  padding: 1rem 1rem 0.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.erp-field-group > legend {
+  width: auto;
+  float: none;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0 0.5rem;
+  margin-bottom: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.erp-field-group--primary { border-color: #0d6efd66; }
+.erp-field-group--primary > legend { color: #0d6efd; }
+
+.erp-field-group--success { border-color: #19875466; }
+.erp-field-group--success > legend { color: #198754; }
+
+.erp-field-group--warning { border-color: #ffc10799; }
+.erp-field-group--warning > legend { color: #a3790a; }
+
+.erp-field-group--info { border-color: #0dcaf066; }
+.erp-field-group--info > legend { color: #0aa2c0; }
+
+.erp-field-group--secondary { border-color: #6c757d66; }
+.erp-field-group--secondary > legend { color: #6c757d; }
+
+/* Details page view/edit toggle: fields marked .erp-editable look like plain text
+   until JS (site.js, .js-edit-toggle) removes their disabled/readonly state. */
+.js-details-form .erp-editable:disabled:not([type="checkbox"]):not([type="radio"]),
+.js-details-form .erp-editable[readonly] {
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  padding-left: 0;
+  color: #212529;
+  opacity: 1;
+}
+
+/* Elements (add-item row, remove buttons) that only make sense while a .js-details-form is in edit mode. */
+.js-details-form:not(.editing) .js-order-edit-only,
+.js-details-form:not(.editing) .js-po-edit-only {
+  display: none !important;
+}

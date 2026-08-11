@@ -97,9 +97,9 @@
 
   <!-- Orders -->
   <data name="Pending" xml:space="preserve"><value>Изчаква се</value></data>
-  <data name="Processing" xml:space="preserve"><value>Обработва се</value></data>
   <data name="Shipped" xml:space="preserve"><value>Изпратена</value></data>
-  <data name="Delivered" xml:space="preserve"><value>Доставена</value></data>
+  <data name="Completed" xml:space="preserve"><value>Завършена</value></data>
+  <data name="On Hold" xml:space="preserve"><value>На изчакване</value></data>
   <data name="Cancelled" xml:space="preserve"><value>Отказана</value></data>
   <data name="Create New Order" xml:space="preserve"><value>Нова поръчка</value></data>
   <data name="Order ID" xml:space="preserve"><value>Номер на поръчка</value></data>
@@ -141,13 +141,13 @@
   <data name="Quantity Sold" xml:space="preserve"><value>Продадено количество</value></data>
 
   <!-- Account -->
-  <data name="Username" xml:space="preserve"><value>Потребителско име</value></data>
   <data name="Password" xml:space="preserve"><value>Парола</value></data>
   <data name="Remember me" xml:space="preserve"><value>Запомни ме</value></data>
   <data name="Access Denied" xml:space="preserve"><value>Отказан достъп</value></data>
   <data name="You do not have permission to view this page." xml:space="preserve"><value>Нямате права за достъп до тази страница.</value></data>
   <data name="Back to Home" xml:space="preserve"><value>Обратно към началото</value></data>
-  <data name="Invalid username or password." xml:space="preserve"><value>Невалидно потребителско име или парола.</value></data>
+  <data name="Invalid email or password." xml:space="preserve"><value>Невалиден имейл или парола.</value></data>
+  <data name="Email is required." xml:space="preserve"><value>Имейлът е задължителен.</value></data>
 
   <!-- Error page -->
   <data name="Error" xml:space="preserve"><value>Грешка</value></data>
@@ -209,7 +209,6 @@
   <data name="Please select who is creating this order." xml:space="preserve"><value>Моля, изберете кой създава поръчката.</value></data>
   <data name="Please select a valid product." xml:space="preserve"><value>Моля, изберете валиден продукт.</value></data>
   <data name="Unit price must be zero or greater." xml:space="preserve"><value>Единичната цена трябва да е нула или по-голяма.</value></data>
-  <data name="Username is required." xml:space="preserve"><value>Потребителското име е задължително.</value></data>
   <data name="Password is required." xml:space="preserve"><value>Паролата е задължителна.</value></data>
 
   <!-- DataTables -->
@@ -225,6 +224,7 @@
   <data name="Previous" xml:space="preserve"><value>Предишна</value></data>
   <data name="Copy" xml:space="preserve"><value>Копирай</value></data>
   <data name="Excel" xml:space="preserve"><value>Excel</value></data>
+  <data name="PDF" xml:space="preserve"><value>PDF</value></data>
   <data name="Print" xml:space="preserve"><value>Печат</value></data>
 
   <!-- SweetAlert2 -->
@@ -240,4 +240,160 @@
   <data name="Are you sure you want to delete this product?" xml:space="preserve"><value>Сигурни ли сте, че искате да изтриете този продукт?</value></data>
   <data name="This product cannot be deleted because it has existing order history." xml:space="preserve"><value>Този продукт не може да бъде изтрит, защото има история на поръчки.</value></data>
   <data name="Product was deleted successfully." xml:space="preserve"><value>Продуктът беше изтрит успешно.</value></data>
+
+  <!-- Dashboard interactivity / filter banners -->
+  <data name="Showing orders from {0} to {1}." xml:space="preserve"><value>Показани са поръчки от {0} до {1}.</value></data>
+  <data name="Clear filter" xml:space="preserve"><value>Изчисти филтъра</value></data>
+  <data name="Showing low stock products only." xml:space="preserve"><value>Показани са само продукти с нисък запас.</value></data>
+
+  <!-- Products: Status, Notes, filters panel -->
+  <data name="Discontinued" xml:space="preserve"><value>Спрян от продажба</value></data>
+  <data name="Out Of Stock" xml:space="preserve"><value>Изчерпан</value></data>
+  <data name="Notes" xml:space="preserve"><value>Бележки</value></data>
+  <data name="Keyword" xml:space="preserve"><value>Ключова дума</value></data>
+  <data name="Name or SKU" xml:space="preserve"><value>Име или артикулен №</value></data>
+  <data name="All Categories" xml:space="preserve"><value>Всички категории</value></data>
+  <data name="All Suppliers" xml:space="preserve"><value>Всички доставчици</value></data>
+  <data name="All Statuses" xml:space="preserve"><value>Всички статуси</value></data>
+  <data name="Price Range" xml:space="preserve"><value>Ценови диапазон</value></data>
+  <data name="Min" xml:space="preserve"><value>Мин</value></data>
+  <data name="Max" xml:space="preserve"><value>Макс</value></data>
+  <data name="Min Price" xml:space="preserve"><value>Минимална цена</value></data>
+  <data name="Max Price" xml:space="preserve"><value>Максимална цена</value></data>
+  <data name="Stock Range" xml:space="preserve"><value>Диапазон на наличност</value></data>
+  <data name="Min Stock" xml:space="preserve"><value>Минимална наличност</value></data>
+  <data name="Max Stock" xml:space="preserve"><value>Максимална наличност</value></data>
+  <data name="Low stock only" xml:space="preserve"><value>Само нисък запас</value></data>
+
+  <!-- Products: Adjust Inventory modal -->
+  <data name="Adjust Inventory" xml:space="preserve"><value>Корекция на наличност</value></data>
+  <data name="Current Stock" xml:space="preserve"><value>Текуща наличност</value></data>
+  <data name="Type" xml:space="preserve"><value>Тип</value></data>
+  <data name="Inflow" xml:space="preserve"><value>Постъпление</value></data>
+  <data name="Outflow" xml:space="preserve"><value>Изписване</value></data>
+  <data name="Adjustment" xml:space="preserve"><value>Корекция</value></data>
+  <data name="Reason" xml:space="preserve"><value>Причина</value></data>
+  <data name="New Stock Level" xml:space="preserve"><value>Нова наличност</value></data>
+  <data name="Quantity is required." xml:space="preserve"><value>Количеството е задължително.</value></data>
+  <data name="Quantity must be zero or greater." xml:space="preserve"><value>Количеството трябва да е нула или по-голямо.</value></data>
+  <data name="Please select an adjustment type." xml:space="preserve"><value>Моля, изберете тип корекция.</value></data>
+  <data name="Reason cannot exceed 250 characters." xml:space="preserve"><value>Причината не може да надвишава 250 символа.</value></data>
+  <data name="Notes cannot exceed 1000 characters." xml:space="preserve"><value>Бележките не могат да надвишават 1000 символа.</value></data>
+  <data name="Please provide a valid quantity for the inventory adjustment." xml:space="preserve"><value>Моля, въведете валидно количество за корекцията на наличността.</value></data>
+  <data name="Inventory was adjusted successfully." xml:space="preserve"><value>Наличността беше коригирана успешно.</value></data>
+
+  <!-- Product Details page -->
+  <data name="Back to Products" xml:space="preserve"><value>Обратно към продуктите</value></data>
+  <data name="Basic Info" xml:space="preserve"><value>Основна информация</value></data>
+  <data name="Pricing" xml:space="preserve"><value>Ценообразуване</value></data>
+  <data name="Inventory" xml:space="preserve"><value>Наличност</value></data>
+  <data name="Order History" xml:space="preserve"><value>История на поръчките</value></data>
+  <data name="This product has not been included in any orders yet." xml:space="preserve"><value>Този продукт все още не е включван в поръчки.</value></data>
+
+  <!-- Order Details page -->
+  <data name="Order Details" xml:space="preserve"><value>Детайли за поръчката</value></data>
+  <data name="Order" xml:space="preserve"><value>Поръчка</value></data>
+  <data name="Back to Orders" xml:space="preserve"><value>Обратно към поръчките</value></data>
+  <data name="Customer Info" xml:space="preserve"><value>Информация за клиента</value></data>
+  <data name="Order Meta" xml:space="preserve"><value>Данни за поръчката</value></data>
+
+  <!-- Customer Details page -->
+  <data name="Back to Customers" xml:space="preserve"><value>Обратно към клиентите</value></data>
+  <data name="Contact Info" xml:space="preserve"><value>Данни за контакт</value></data>
+
+  <!-- Users module -->
+  <data name="Users" xml:space="preserve"><value>Потребители</value></data>
+  <data name="Create New User" xml:space="preserve"><value>Добави нов потребител</value></data>
+  <data name="Create User" xml:space="preserve"><value>Създаване на потребител</value></data>
+  <data name="User ID" xml:space="preserve"><value>Потребителски №</value></data>
+  <data name="Full Name" xml:space="preserve"><value>Пълно име</value></data>
+  <data name="Role" xml:space="preserve"><value>Роля</value></data>
+  <data name="Contact Details" xml:space="preserve"><value>Данни за контакт</value></data>
+  <data name="View" xml:space="preserve"><value>Преглед</value></data>
+  <data name="First Name" xml:space="preserve"><value>Име</value></data>
+  <data name="Last Name" xml:space="preserve"><value>Фамилия</value></data>
+  <data name="Select Role" xml:space="preserve"><value>Избери роля</value></data>
+  <data name="Assigned Role" xml:space="preserve"><value>Присвоена роля</value></data>
+  <data name="Account &amp; Security" xml:space="preserve"><value>Профил и сигурност</value></data>
+  <data name="Back to Users" xml:space="preserve"><value>Обратно към потребителите</value></data>
+  <data name="System ID" xml:space="preserve"><value>Системен №</value></data>
+  <data name="Leave blank to keep current password" xml:space="preserve"><value>Оставете празно, за да запазите текущата парола</value></data>
+  <data name="First name is required." xml:space="preserve"><value>Името е задължително.</value></data>
+  <data name="First name cannot exceed 100 characters." xml:space="preserve"><value>Името не може да надвишава 100 символа.</value></data>
+  <data name="Last name is required." xml:space="preserve"><value>Фамилията е задължителна.</value></data>
+  <data name="Last name cannot exceed 100 characters." xml:space="preserve"><value>Фамилията не може да надвишава 100 символа.</value></data>
+  <data name="Please select a role." xml:space="preserve"><value>Моля, изберете роля.</value></data>
+  <data name="A user with this email already exists." xml:space="preserve"><value>Вече съществува потребител с този имейл.</value></data>
+  <data name="User &quot;{0}&quot; was created successfully." xml:space="preserve"><value>Потребителят „{0}“ беше създаден успешно.</value></data>
+  <data name="User &quot;{0}&quot; was updated successfully." xml:space="preserve"><value>Потребителят „{0}“ беше обновен успешно.</value></data>
+
+  <!-- Purchase Orders module -->
+  <data name="Purchase Orders" xml:space="preserve"><value>Поръчки за доставка</value></data>
+  <data name="Create New Purchase Order" xml:space="preserve"><value>Нова поръчка за доставка</value></data>
+  <data name="Create Purchase Order" xml:space="preserve"><value>Създаване на поръчка за доставка</value></data>
+  <data name="PO ID" xml:space="preserve"><value>№ на доставка</value></data>
+  <data name="Ordered" xml:space="preserve"><value>Поръчана</value></data>
+  <data name="Received" xml:space="preserve"><value>Получена</value></data>
+  <data name="Purchase Order Details" xml:space="preserve"><value>Детайли за поръчката за доставка</value></data>
+  <data name="Purchase Order" xml:space="preserve"><value>Поръчка за доставка</value></data>
+  <data name="Back to Purchase Orders" xml:space="preserve"><value>Обратно към поръчките за доставка</value></data>
+  <data name="Mark as Received" xml:space="preserve"><value>Маркирай като получена</value></data>
+  <data name="Supplier Info" xml:space="preserve"><value>Информация за доставчика</value></data>
+  <data name="Ordered Products" xml:space="preserve"><value>Поръчани продукти</value></data>
+  <data name="Please select a supplier." xml:space="preserve"><value>Моля, изберете доставчик.</value></data>
+  <data name="A purchase order must contain at least one item." xml:space="preserve"><value>Поръчката за доставка трябва да съдържа поне един артикул.</value></data>
+  <data name="All purchase order items must have a valid product and a positive quantity." xml:space="preserve"><value>Всички артикули в поръчката за доставка трябва да имат валиден продукт и положително количество.</value></data>
+  <data name="Please add at least one purchase order item before submitting." xml:space="preserve"><value>Моля, добавете поне един артикул преди изпращане.</value></data>
+  <data name="Purchase order #{0} was created successfully." xml:space="preserve"><value>Поръчка за доставка №{0} беше създадена успешно.</value></data>
+  <data name="Purchase order was updated successfully." xml:space="preserve"><value>Поръчката за доставка беше обновена успешно.</value></data>
+  <data name="Purchase order was marked as received and stock was updated." xml:space="preserve"><value>Поръчката за доставка беше маркирана като получена и наличностите бяха обновени.</value></data>
+
+  <!-- Categories & Suppliers Details pages -->
+  <data name="Back to Categories" xml:space="preserve"><value>Обратно към категориите</value></data>
+  <data name="Assigned Products" xml:space="preserve"><value>Присвоени продукти</value></data>
+  <data name="No products are assigned to this category yet." xml:space="preserve"><value>Все още няма продукти, присвоени към тази категория.</value></data>
+  <data name="Back to Suppliers" xml:space="preserve"><value>Обратно към доставчиците</value></data>
+  <data name="Purchase Order History" xml:space="preserve"><value>История на поръчките за доставка</value></data>
+  <data name="This supplier has no purchase orders yet." xml:space="preserve"><value>Този доставчик все още няма поръчки за доставка.</value></data>
+
+  <!-- Reports modernization -->
+  <data name="Total Orders" xml:space="preserve"><value>Общо поръчки</value></data>
+  <data name="Top Category" xml:space="preserve"><value>Водеща категория</value></data>
+
+  <!-- Order cancellation -->
+  <data name="Cancel Order" xml:space="preserve"><value>Отказ на поръчката</value></data>
+  <data name="Are you sure you want to cancel this order?" xml:space="preserve"><value>Сигурни ли сте, че искате да откажете тази поръчка?</value></data>
+  <data name="This will restore the reserved stock and cannot be undone." xml:space="preserve"><value>Това ще възстанови резервираната наличност и не може да бъде отменено.</value></data>
+  <data name="Yes, cancel it" xml:space="preserve"><value>Да, откажи</value></data>
+  <data name="No" xml:space="preserve"><value>Не</value></data>
+  <data name="Order was cancelled and its stock was restored." xml:space="preserve"><value>Поръчката беше отказана и наличността беше възстановена.</value></data>
+  <data name="This order has been cancelled and its status can no longer be changed." xml:space="preserve"><value>Тази поръчка е отказана и статусът ѝ вече не може да бъде променян.</value></data>
+  <data name="This order has already been cancelled." xml:space="preserve"><value>Тази поръчка вече е отказана.</value></data>
+  <data name="This order has been cancelled and can no longer be edited." xml:space="preserve"><value>Тази поръчка е отказана и вече не може да бъде редактирана.</value></data>
+
+  <!-- Confirm password -->
+  <data name="Confirm Password" xml:space="preserve"><value>Потвърди паролата</value></data>
+  <data name="Passwords do not match." xml:space="preserve"><value>Паролите не съвпадат.</value></data>
+
+  <!-- Purchase Reports tab -->
+  <data name="Purchase Reports" xml:space="preserve"><value>Отчети за доставки</value></data>
+  <data name="Total Spend" xml:space="preserve"><value>Общо разходи</value></data>
+  <data name="Total Purchase Orders" xml:space="preserve"><value>Общо поръчки за доставка</value></data>
+  <data name="Quantity Purchased" xml:space="preserve"><value>Закупено количество</value></data>
+  <data name="Top Supplier" xml:space="preserve"><value>Водещ доставчик</value></data>
+  <data name="Purchases by Period" xml:space="preserve"><value>Доставки по период</value></data>
+  <data name="Purchases by Supplier" xml:space="preserve"><value>Доставки по доставчик</value></data>
+  <data name="Purchase Order Count" xml:space="preserve"><value>Брой поръчки за доставка</value></data>
+  <data name="No purchases found for the selected range." xml:space="preserve"><value>Няма намерени доставки за избрания период.</value></data>
+  <data name="Spend (€)" xml:space="preserve"><value>Разходи (€)</value></data>
+
+  <!-- Orders Module Overhaul -->
+  <data name="Shipping Address" xml:space="preserve"><value>Адрес за доставка</value></data>
+  <data name="Shipped Date" xml:space="preserve"><value>Дата на изпращане</value></data>
+  <data name="Min Total" xml:space="preserve"><value>Минимална сума</value></data>
+  <data name="Max Total" xml:space="preserve"><value>Максимална сума</value></data>
+  <data name="Order status was updated successfully." xml:space="preserve"><value>Статусът на поръчката беше обновен успешно.</value></data>
+  <data name="Order was updated successfully." xml:space="preserve"><value>Поръчката беше обновена успешно.</value></data>
+  <data name="Customer was created successfully." xml:space="preserve"><value>Клиентът беше създаден успешно.</value></data>
+  <data name="Something went wrong. Please try again." xml:space="preserve"><value>Възникна грешка. Моля, опитайте отново.</value></data>
 </root>

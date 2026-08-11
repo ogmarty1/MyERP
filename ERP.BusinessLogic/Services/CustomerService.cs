@@ -21,6 +21,28 @@ namespace ERP.BusinessLogic.Services
                 .ToListAsync();
         }
 
+        public async Task<List<Customer>> GetFilteredAsync(CustomerFilterRequest filter)
+        {
+            var query = _context.Customers.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filter.Name))
+                query = query.Where(c => EF.Functions.Like(c.Name, $"%{filter.Name.Trim()}%"));
+
+            if (!string.IsNullOrWhiteSpace(filter.Company))
+                query = query.Where(c => c.CompanyName != null && EF.Functions.Like(c.CompanyName, $"%{filter.Company.Trim()}%"));
+
+            if (!string.IsNullOrWhiteSpace(filter.Phone))
+                query = query.Where(c => c.Phone != null && EF.Functions.Like(c.Phone, $"%{filter.Phone.Trim()}%"));
+
+            if (!string.IsNullOrWhiteSpace(filter.Email))
+                query = query.Where(c => c.Email != null && EF.Functions.Like(c.Email, $"%{filter.Email.Trim()}%"));
+
+            if (!string.IsNullOrWhiteSpace(filter.Address))
+                query = query.Where(c => c.Address != null && EF.Functions.Like(c.Address, $"%{filter.Address.Trim()}%"));
+
+            return await query.OrderBy(c => c.Name).ToListAsync();
+        }
+
         public async Task<Customer?> GetByIdAsync(int id)
         {
             return await _context.Customers
@@ -37,6 +59,7 @@ namespace ERP.BusinessLogic.Services
                 Email = request.Email,
                 Phone = request.Phone,
                 Address = request.Address,
+                Notes = request.Notes,
                 IsActive = request.IsActive
             };
 
@@ -57,6 +80,7 @@ namespace ERP.BusinessLogic.Services
             customer.Email = request.Email;
             customer.Phone = request.Phone;
             customer.Address = request.Address;
+            customer.Notes = request.Notes;
             customer.IsActive = request.IsActive;
 
             await _context.SaveChangesAsync();

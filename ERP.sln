@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERP.BusinessLogic", "ERP.Bu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERP.DataAccess", "ERP.DataAccess\ERP.DataAccess.csproj", "{F28CAFE3-9BCC-4D2B-B538-6849C80E8480}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERP.BusinessLogic.Tests", "ERP.BusinessLogic.Tests\ERP.BusinessLogic.Tests.csproj", "{3B2E3565-E006-4888-BF43-CAB4CC6EBEE2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{F28CAFE3-9BCC-4D2B-B538-6849C80E8480}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F28CAFE3-9BCC-4D2B-B538-6849C80E8480}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F28CAFE3-9BCC-4D2B-B538-6849C80E8480}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B2E3565-E006-4888-BF43-CAB4CC6EBEE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B2E3565-E006-4888-BF43-CAB4CC6EBEE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B2E3565-E006-4888-BF43-CAB4CC6EBEE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B2E3565-E006-4888-BF43-CAB4CC6EBEE2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -9,9 +9,9 @@ namespace ERP.BusinessLogic
 {
     public static class DataSeeder
     {
-        public const string AdminUsername = "admin";
-        public const string ManagerUsername = "manager";
-        public const string EmployeeUsername = "employee";
+        public const string AdminEmail = "admin@myerp.local";
+        public const string ManagerEmail = "manager@myerp.local";
+        public const string EmployeeEmail = "employee@myerp.local";
 
         // Dev-only default passwords for the seeded demo accounts; change on first login in a real deployment.
         private const string DefaultAdminPassword = "Admin@12345";
@@ -28,9 +28,9 @@ namespace ERP.BusinessLogic
         {
             await SeedRolesAsync(context);
 
-            var adminUser = await SeedUserAsync(context, AdminUsername, "admin@myerp.local", DefaultAdminPassword, "Admin");
-            var managerUser = await SeedUserAsync(context, ManagerUsername, "manager@myerp.local", DefaultManagerPassword, "Manager");
-            var employeeUser = await SeedUserAsync(context, EmployeeUsername, "employee@myerp.local", DefaultEmployeePassword, "Employee");
+            var adminUser = await SeedUserAsync(context, "System", "Administrator", AdminEmail, DefaultAdminPassword, "Admin");
+            var managerUser = await SeedUserAsync(context, "Maria", "Ivanova", ManagerEmail, DefaultManagerPassword, "Manager");
+            var employeeUser = await SeedUserAsync(context, "Georgi", "Dimitrov", EmployeeEmail, DefaultEmployeePassword, "Employee");
 
             // Demo nomenclatures/products/customers/orders are seeded together, gated on Categories
             // being empty, so a fresh database gets a full presentable dataset exactly once.
@@ -56,17 +56,18 @@ namespace ERP.BusinessLogic
             await context.SaveChangesAsync();
         }
 
-        private static async Task<User> SeedUserAsync(ApplicationDbContext context, string username, string email, string password, string roleName)
+        private static async Task<User> SeedUserAsync(ApplicationDbContext context, string firstName, string lastName, string email, string password, string roleName)
         {
             var user = await context.Users
                 .Include(u => u.UserRoles)
-                .FirstOrDefaultAsync(u => u.Username == username);
+                .FirstOrDefaultAsync(u => u.Email == email);
 
             if (user == null)
             {
                 user = new User
                 {
-                    Username = username,
+                    FirstName = firstName,
+                    LastName = lastName,
                     Email = email,
                     IsActive = true
                 };

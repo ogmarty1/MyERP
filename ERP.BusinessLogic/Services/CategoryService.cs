@@ -24,6 +24,7 @@ namespace ERP.BusinessLogic.Services
         public async Task<Category?> GetByIdAsync(int id)
         {
             return await _context.Categories
+                .Include(c => c.Products)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 

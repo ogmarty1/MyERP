@@ -29,7 +29,11 @@
         <a asp-action="Index" class="btn btn-outline-secondary">@Localizer["Back to Purchase Orders"]</a>
         @if (isOrdered)
         {
-            <form asp-action="MarkAsReceived" asp-route-id="@po.Id" method="post" class="d-inline js-submit-loading">
+            <form asp-action="MarkAsReceived" asp-route-id="@po.Id" method="post" class="d-inline js-delete-form"
+                  data-confirm-title="@Localizer["Mark as Received"]"
+                  data-confirm-text="@Localizer["Are you sure you want to mark this purchase order as received?"] @Localizer["This will add the ordered quantities to stock."]"
+                  data-confirm-button="@Localizer["Yes, mark as received"]"
+                  data-cancel-button="@Localizer["Cancel"]">
                 @Html.AntiForgeryToken()
                 <button type="submit" class="btn btn-success">
                     <i class="bi bi-check2-circle"></i> @Localizer["Mark as Received"]

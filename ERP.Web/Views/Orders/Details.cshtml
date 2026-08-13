@@ -69,7 +69,11 @@
             @foreach (var status in allStatuses)
             {
                 var isCurrent = order.Status == status;
-                <form asp-action="ChangeStatus" asp-route-id="@order.Id" method="post" class="d-inline">
+                <form asp-action="ChangeStatus" asp-route-id="@order.Id" method="post" class="d-inline js-delete-form"
+                      data-confirm-title="@Localizer["Change Order Status"]"
+                      data-confirm-text="@Localizer["Are you sure you want to change the status to"] @StatusText(status)?"
+                      data-confirm-button="@Localizer["Yes, change it"]"
+                      data-cancel-button="@Localizer["Cancel"]">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="status" value="@status" />
                     <button type="submit" class="btn btn-sm @(isCurrent ? StatusButtonClass(status) : "btn-outline-secondary")" @(isCurrent ? "disabled" : "")>

@@ -371,6 +371,14 @@
   <data name="This order has already been cancelled." xml:space="preserve"><value>Тази поръчка вече е отказана.</value></data>
   <data name="This order has been cancelled and can no longer be edited." xml:space="preserve"><value>Тази поръчка е отказана и вече не може да бъде редактирана.</value></data>
 
+  <!-- Order/Purchase order status change confirmation -->
+  <data name="Change Order Status" xml:space="preserve"><value>Промяна на статуса на поръчката</value></data>
+  <data name="Are you sure you want to change the status to" xml:space="preserve"><value>Сигурни ли сте, че искате да промените статуса на</value></data>
+  <data name="Yes, change it" xml:space="preserve"><value>Да, промени</value></data>
+  <data name="Are you sure you want to mark this purchase order as received?" xml:space="preserve"><value>Сигурни ли сте, че искате да маркирате тази поръчка за доставка като получена?</value></data>
+  <data name="This will add the ordered quantities to stock." xml:space="preserve"><value>Това ще добави поръчаните количества към наличността.</value></data>
+  <data name="Yes, mark as received" xml:space="preserve"><value>Да, маркирай като получена</value></data>
+
   <!-- Confirm password -->
   <data name="Confirm Password" xml:space="preserve"><value>Потвърди паролата</value></data>
   <data name="Passwords do not match." xml:space="preserve"><value>Паролите не съвпадат.</value></data>

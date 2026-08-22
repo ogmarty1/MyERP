@@ -2,8 +2,9 @@
 
 ## Tech Stack
 - .NET 8 (Web MVC, BusinessLogic, DataAccess)
-- EF Core 8.0.11 + SQL Server Express
-- Frontend: Bootstrap 5, Chart.js, DataTables (with Export extension)
+- EF Core 8.0.11 + SQL Server Express (`Microsoft.Extensions.Identity.Core` for identity types)
+- Testing: xUnit + EF Core InMemory (`ERP.BusinessLogic.Tests`)
+- Frontend: Bootstrap 5 (+ Bootstrap Icons), jQuery (+ jQuery Validation/Unobtrusive), Chart.js, DataTables (Buttons/Select extensions, JSZip + pdfmake for Excel/PDF export), SweetAlert2 (modal confirmations), Toastr (notifications)
 
 ## Architecture & Globalization Constraints
 - **Role Management**: Custom Many-to-Many via `UserRoles` join table (Users can have multiple Roles).

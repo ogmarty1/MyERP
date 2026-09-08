@@ -33,6 +33,9 @@
         OrderStatus.Cancelled => Localizer["Cancelled"],
         _ => status.ToString()
     };
+
+    var categoryText = Model.Form.Categories.FirstOrDefault(c => c.Value == Model.Form.CategoryId.ToString())?.Text ?? "";
+    var productContext = $"Product name: {Model.Form.Name}. Category: {categoryText}. Sale price: {Model.Form.SalePrice:0.00} EUR.";
 }
 
 <div class="js-details-form-wrapper" data-force-edit="@(forceEdit ? "true" : "false")">
@@ -101,6 +104,12 @@
                             <label asp-for="Form.Description" class="form-label">@Localizer["Description"]</label>
                             <textarea asp-for="Form.Description" class="form-control erp-editable" rows="3" readonly></textarea>
                             <span asp-validation-for="Form.Description" class="text-danger"></span>
+                            <button type="button" class="btn btn-sm btn-outline-primary js-ai-suggest-btn mt-1" disabled
+                                    data-target="#Form_Description"
+                                    data-instruction="@Localizer["Write a short, appealing product description for this product."]"
+                                    data-context="@productContext">
+                                <i class="bi bi-stars"></i> @Localizer["AI Suggest"]
+                            </button>
                         </div>
                     </div>
                 </fieldset>
@@ -109,6 +118,12 @@
                     <legend>@Localizer["Notes"]</legend>
                     <textarea asp-for="Form.Notes" class="form-control erp-editable" rows="3" readonly></textarea>
                     <span asp-validation-for="Form.Notes" class="text-danger"></span>
+                    <button type="button" class="btn btn-sm btn-outline-primary js-ai-suggest-btn mt-1" disabled
+                            data-target="#Form_Notes"
+                            data-instruction="@Localizer["Write a short internal note about this product."]"
+                            data-context="@productContext">
+                        <i class="bi bi-stars"></i> @Localizer["AI Suggest"]
+                    </button>
                 </fieldset>
             </div>
 
@@ -190,6 +205,56 @@
             </table>
         }
     </fieldset>
+
+    @if (canManage)
+    {
+        <fieldset class="erp-field-group erp-field-group--primary">
+            <legend>@Localizer["Market Price Comparison"]</legend>
+            <form asp-action="CheckMarketPrice" asp-route-id="@Model.Form.Id" method="post" class="js-submit-loading mb-3">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="bi bi-search"></i> @Localizer["Check Market Price"]
+                </button>
+            </form>
+            @if (Model.PriceHistory.Count == 0)
+            {
+                <p class="text-muted mb-0">@Localizer["No market price checks yet. Click \"Check Market Price\" to search."]</p>
+            }
+            else
+            {
+                <table id="priceHistoryTable" class="table table-striped table-bordered align-middle w-100">
+                    <thead class="table-light">
+                        <tr>
+                            <th>@Localizer["Checked At"]</th>
+                            <th>@Localizer["Store"]</th>
+                            <th>@Localizer["Price"]</th>
+                            <th>@Localizer["Diff vs. Your Price"]</th>
+                            <th>@Localizer["Link"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var offer in Model.PriceHistory)
+                        {
+                            var diff = offer.Price - Model.Form.SalePrice;
+                            var diffClass = diff < 0 ? "text-danger" : diff > 0 ? "text-success" : "text-muted";
+                            <tr>
+                                <td data-order="@offer.PriceCheck.CheckedAt.ToString("o")">@offer.PriceCheck.CheckedAt.ToLocalTime().ToString("g")</td>
+                                <td>@offer.SourceName</td>
+                                <td data-order="@offer.Price">@offer.Price.ToEuro()</td>
+                                <td data-order="@diff" class="@diffClass">@(diff > 0 ? "+" : "")@diff.ToEuro()</td>
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(offer.Link))
+                                    {
+                                        <a href="@offer.Link" target="_blank" rel="noopener noreferrer">@Localizer["View"]</a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </fieldset>
+    }
 </div>
 
 @section Scripts {
@@ -204,6 +269,13 @@
                 $('#orderHistoryTable').DataTable({
                     language: window.dataTableLanguage,
                     order: [[1, 'desc']]
+                });
+            }
+
+            if ($('#priceHistoryTable').length) {
+                $('#priceHistoryTable').DataTable({
+                    language: window.dataTableLanguage,
+                    order: [[0, 'desc']]
                 });
             }
         });

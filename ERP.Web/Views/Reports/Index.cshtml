@@ -1,5 +1,6 @@
 @model ERP.Web.Models.ReportsViewModel
 @using ERP.BusinessLogic.DTOs
+@using ERP.DataAccess.Models
 @using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
@@ -11,6 +12,29 @@
         new(Localizer["Monthly"], ReportPeriodGrouping.Monthly.ToString(), Model.Filter.Grouping == ReportPeriodGrouping.Monthly)
     };
 
+    var showDateFilter = Model.ActiveType != ReportType.LowStock;
+    var showGrouping = Model.ActiveType is ReportType.SalesOverview or ReportType.PurchasesOverview;
+
+    string MenuClass(ReportType type) => Model.ActiveType == type
+        ? "list-group-item list-group-item-action active"
+        : "list-group-item list-group-item-action";
+
+    string BadgeClass(MovementType type) => type switch
+    {
+        MovementType.Inflow => "bg-success",
+        MovementType.Outflow => "bg-danger",
+        MovementType.Adjustment => "bg-secondary",
+        _ => "bg-secondary"
+    };
+
+    string MovementText(MovementType type) => type switch
+    {
+        MovementType.Inflow => Localizer["Inflow"],
+        MovementType.Outflow => Localizer["Outflow"],
+        MovementType.Adjustment => Localizer["Adjustment"],
+        _ => type.ToString()
+    };
+
     var totalRevenue = Model.SalesByPeriod.Sum(i => i.TotalRevenue);
     var totalOrders = Model.SalesByPeriod.Sum(i => i.OrderCount);
     var totalQuantitySold = Model.SalesByCategory.Sum(i => i.QuantitySold);
@@ -20,341 +44,861 @@
     var totalPurchaseOrders = Model.PurchasesByPeriod.Sum(i => i.PurchaseOrderCount);
     var totalQuantityPurchased = Model.PurchasesBySupplier.Sum(i => i.QuantityPurchased);
     var topSupplier = Model.PurchasesBySupplier.OrderByDescending(i => i.TotalSpend).FirstOrDefault();
+
+    var totalShortfall = Model.LowStock.Sum(i => i.Shortfall);
+    var affectedCategories = Model.LowStock.Select(i => i.CategoryName).Distinct().Count();
+
+    var profitRevenue = Model.ProductProfitability.Sum(i => i.TotalRevenue);
+    var profitCost = Model.ProductProfitability.Sum(i => i.TotalCost);
+    var grossProfit = Model.ProductProfitability.Sum(i => i.GrossProfit);
+    var avgMargin = profitRevenue == 0 ? 0 : Math.Round((grossProfit / profitRevenue) * 100, 2);
+
+    var totalCustomersWithOrders = Model.TopCustomers.Count;
+    var customersRevenue = Model.TopCustomers.Sum(i => i.TotalRevenue);
+    var customersOrders = Model.TopCustomers.Sum(i => i.OrderCount);
+    var overallAvgOrderValue = customersOrders == 0 ? 0 : Math.Round(customersRevenue / customersOrders, 2);
+    var topCustomer = Model.TopCustomers.OrderByDescending(i => i.TotalRevenue).FirstOrDefault();
+
+    var totalInflow = Model.InventoryMovements.Where(m => m.MovementType == MovementType.Inflow).Sum(m => m.Quantity);
+    var totalOutflow = Model.InventoryMovements.Where(m => m.MovementType == MovementType.Outflow).Sum(m => m.Quantity);
+    var netChange = totalInflow - totalOutflow;
+
+    var employeeRevenue = Model.SalesByEmployee.Sum(i => i.TotalRevenue);
+    var employeeOrders = Model.SalesByEmployee.Sum(i => i.OrderCount);
+    var topEmployee = Model.SalesByEmployee.OrderByDescending(i => i.TotalRevenue).FirstOrDefault();
 }
 
 <h1 class="mb-4">@Localizer["Reports"]</h1>
 
 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-<div class="card mb-4">
-    <div class="card-body">
-        <form asp-action="Index" method="get" class="row g-3 align-items-end">
-            <div class="col-auto">
-                <label asp-for="Filter.StartDate" class="form-label">@Localizer["Start Date"]</label>
-                <input asp-for="Filter.StartDate" class="form-control" />
-            </div>
-            <div class="col-auto">
-                <label asp-for="Filter.EndDate" class="form-label">@Localizer["End Date"]</label>
-                <input asp-for="Filter.EndDate" class="form-control" />
-            </div>
-            <div class="col-auto">
-                <label asp-for="Filter.Grouping" class="form-label">@Localizer["Group By"]</label>
-                <select asp-for="Filter.Grouping" asp-items="groupingOptions" class="form-select"></select>
-            </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-primary">@Localizer["Filter"]</button>
-                <a asp-action="Index" class="btn btn-outline-secondary">@Localizer["Clear"]</a>
-            </div>
-        </form>
-    </div>
-</div>
-
-<ul class="nav nav-tabs mb-4" id="reportsTab" role="tablist">
-    <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="sales-tab" data-bs-toggle="tab" data-bs-target="#sales-pane" type="button" role="tab" aria-controls="sales-pane" aria-selected="true">
-            @Localizer["Sales Reports"]
-        </button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="purchases-tab" data-bs-toggle="tab" data-bs-target="#purchases-pane" type="button" role="tab" aria-controls="purchases-pane" aria-selected="false">
-            @Localizer["Purchase Reports"]
-        </button>
-    </li>
-</ul>
-
-<div class="tab-content" id="reportsTabContent">
-    <div class="tab-pane fade show active" id="sales-pane" role="tabpanel" aria-labelledby="sales-tab">
-        <div class="row g-3 mb-4">
-            <div class="col-md-6 col-xl-3">
-                <div class="card kpi-card border-0 shadow-sm h-100">
-                    <div class="card-body d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="card-title text-muted mb-1">@Localizer["Total Revenue"]</h6>
-                            <p class="card-text fs-4 fw-bold mb-0">@totalRevenue.ToEuro()</p>
-                        </div>
-                        <i class="bi bi-currency-exchange kpi-icon text-success"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-xl-3">
-                <div class="card kpi-card border-0 shadow-sm h-100">
-                    <div class="card-body d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="card-title text-muted mb-1">@Localizer["Total Orders"]</h6>
-                            <p class="card-text fs-4 fw-bold mb-0">@totalOrders</p>
-                        </div>
-                        <i class="bi bi-cart-check kpi-icon text-primary"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-xl-3">
-                <div class="card kpi-card border-0 shadow-sm h-100">
-                    <div class="card-body d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="card-title text-muted mb-1">@Localizer["Quantity Sold"]</h6>
-                            <p class="card-text fs-4 fw-bold mb-0">@totalQuantitySold</p>
-                        </div>
-                        <i class="bi bi-boxes kpi-icon text-info"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-xl-3">
-                <div class="card kpi-card border-0 shadow-sm h-100">
-                    <div class="card-body d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="card-title text-muted mb-1">@Localizer["Top Category"]</h6>
-                            <p class="card-text fs-4 fw-bold mb-0">@(topCategory?.CategoryName ?? "-")</p>
-                        </div>
-                        <i class="bi bi-award kpi-icon text-warning"></i>
-                    </div>
-                </div>
-            </div>
+<div class="row">
+    <div class="col-lg-3 mb-4">
+        <h6 class="text-muted text-uppercase small mb-2">@Localizer["Sales & Purchases"]</h6>
+        <div class="list-group mb-4">
+            <a class="@MenuClass(ReportType.SalesOverview)" asp-action="Index" asp-route-type="@ReportType.SalesOverview"
+               asp-route-StartDate="@Model.Filter.StartDate" asp-route-EndDate="@Model.Filter.EndDate" asp-route-Grouping="@Model.Filter.Grouping">
+                <i class="bi bi-graph-up-arrow me-2"></i>@Localizer["Sales Overview"]
+            </a>
+            <a class="@MenuClass(ReportType.PurchasesOverview)" asp-action="Index" asp-route-type="@ReportType.PurchasesOverview"
+               asp-route-StartDate="@Model.Filter.StartDate" asp-route-EndDate="@Model.Filter.EndDate" asp-route-Grouping="@Model.Filter.Grouping">
+                <i class="bi bi-truck me-2"></i>@Localizer["Purchases Overview"]
+            </a>
         </div>
 
-        @if (Model.SalesByPeriod.Count > 0 || Model.SalesByCategory.Count > 0)
+        <h6 class="text-muted text-uppercase small mb-2">@Localizer["Business Insights"]</h6>
+        <div class="list-group">
+            <a class="@MenuClass(ReportType.LowStock)" asp-action="Index" asp-route-type="@ReportType.LowStock">
+                <i class="bi bi-exclamation-triangle me-2"></i>@Localizer["Low Stock"]
+            </a>
+            <a class="@MenuClass(ReportType.ProductProfitability)" asp-action="Index" asp-route-type="@ReportType.ProductProfitability"
+               asp-route-StartDate="@Model.Filter.StartDate" asp-route-EndDate="@Model.Filter.EndDate">
+                <i class="bi bi-piggy-bank me-2"></i>@Localizer["Product Profitability"]
+            </a>
+            <a class="@MenuClass(ReportType.TopCustomers)" asp-action="Index" asp-route-type="@ReportType.TopCustomers"
+               asp-route-StartDate="@Model.Filter.StartDate" asp-route-EndDate="@Model.Filter.EndDate">
+                <i class="bi bi-people me-2"></i>@Localizer["Top Customers"]
+            </a>
+            <a class="@MenuClass(ReportType.InventoryMovements)" asp-action="Index" asp-route-type="@ReportType.InventoryMovements"
+               asp-route-StartDate="@Model.Filter.StartDate" asp-route-EndDate="@Model.Filter.EndDate">
+                <i class="bi bi-arrow-left-right me-2"></i>@Localizer["Inventory Movements"]
+            </a>
+            <a class="@MenuClass(ReportType.SalesByEmployee)" asp-action="Index" asp-route-type="@ReportType.SalesByEmployee"
+               asp-route-StartDate="@Model.Filter.StartDate" asp-route-EndDate="@Model.Filter.EndDate">
+                <i class="bi bi-person-badge me-2"></i>@Localizer["Sales by Employee"]
+            </a>
+        </div>
+    </div>
+
+    <div class="col-lg-9">
+        @if (showDateFilter)
         {
-            <div class="row g-3 mb-4">
-                <div class="col-lg-7">
-                    <div class="card chart-card border-0 shadow-sm h-100">
-                        <div class="card-body">
-                            <h6 class="card-title text-muted mb-3">@Localizer["Sales by Period"]</h6>
-                            <canvas id="salesByPeriodChart"></canvas>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form asp-action="Index" method="get" class="row g-3 align-items-end">
+                        <input type="hidden" name="type" value="@Model.ActiveType" />
+                        <div class="col-auto">
+                            <label asp-for="Filter.StartDate" class="form-label">@Localizer["Start Date"]</label>
+                            <input asp-for="Filter.StartDate" class="form-control" />
                         </div>
-                    </div>
-                </div>
-                <div class="col-lg-5">
-                    <div class="card chart-card border-0 shadow-sm h-100">
-                        <div class="card-body">
-                            <h6 class="card-title text-muted mb-3">@Localizer["Sales by Category"]</h6>
-                            <canvas id="salesByCategoryChart"></canvas>
+                        <div class="col-auto">
+                            <label asp-for="Filter.EndDate" class="form-label">@Localizer["End Date"]</label>
+                            <input asp-for="Filter.EndDate" class="form-control" />
                         </div>
-                    </div>
+                        @if (showGrouping)
+                        {
+                            <div class="col-auto">
+                                <label asp-for="Filter.Grouping" class="form-label">@Localizer["Group By"]</label>
+                                <select asp-for="Filter.Grouping" asp-items="groupingOptions" class="form-select"></select>
+                            </div>
+                        }
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary">@Localizer["Filter"]</button>
+                            <a asp-action="Index" asp-route-type="@Model.ActiveType" class="btn btn-outline-secondary">@Localizer["Clear"]</a>
+                        </div>
+                    </form>
                 </div>
             </div>
         }
 
-        <div class="row">
-            <div class="col-lg-6 mb-4">
-                <h4 class="mb-3">@Localizer["Sales by Period"]</h4>
-                @if (Model.SalesByPeriod.Count == 0)
-                {
-                    <p class="text-muted">@Localizer["No sales found for the selected range."]</p>
-                }
-                else
-                {
-                    <table id="salesByPeriodTable" class="table table-striped table-bordered align-middle w-100">
-                        <thead class="table-light">
-                            <tr>
-                                <th>@Localizer["Period"]</th>
-                                <th>@Localizer["Order Count"]</th>
-                                <th>@Localizer["Total Revenue"]</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model.SalesByPeriod)
-                            {
-                                <tr>
-                                    <td>@item.PeriodLabel</td>
-                                    <td>@item.OrderCount</td>
-                                    <td data-order="@item.TotalRevenue">@item.TotalRevenue.ToEuro()</td>
-                                </tr>
-                            }
-                        </tbody>
-                        <tfoot>
-                            <tr class="table-light fw-bold">
-                                <td>@Localizer["Total"]</td>
-                                <td>@totalOrders</td>
-                                <td>@totalRevenue.ToEuro()</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                }
-            </div>
-
-            <div class="col-lg-6 mb-4">
-                <h4 class="mb-3">@Localizer["Sales by Category"]</h4>
-                @if (Model.SalesByCategory.Count == 0)
-                {
-                    <p class="text-muted">@Localizer["No sales found for the selected range."]</p>
-                }
-                else
-                {
-                    <table id="salesByCategoryTable" class="table table-striped table-bordered align-middle w-100">
-                        <thead class="table-light">
-                            <tr>
-                                <th>@Localizer["Category"]</th>
-                                <th>@Localizer["Quantity Sold"]</th>
-                                <th>@Localizer["Total Revenue"]</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model.SalesByCategory)
-                            {
-                                <tr>
-                                    <td>@item.CategoryName</td>
-                                    <td>@item.QuantitySold</td>
-                                    <td data-order="@item.TotalRevenue">@item.TotalRevenue.ToEuro()</td>
-                                </tr>
-                            }
-                        </tbody>
-                        <tfoot>
-                            <tr class="table-light fw-bold">
-                                <td>@Localizer["Total"]</td>
-                                <td>@totalQuantitySold</td>
-                                <td>@Model.SalesByCategory.Sum(i => i.TotalRevenue).ToEuro()</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                }
-            </div>
-        </div>
-    </div>
-
-    <div class="tab-pane fade" id="purchases-pane" role="tabpanel" aria-labelledby="purchases-tab">
-        <div class="row g-3 mb-4">
-            <div class="col-md-6 col-xl-3">
-                <div class="card kpi-card border-0 shadow-sm h-100">
-                    <div class="card-body d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="card-title text-muted mb-1">@Localizer["Total Spend"]</h6>
-                            <p class="card-text fs-4 fw-bold mb-0">@totalSpend.ToEuro()</p>
-                        </div>
-                        <i class="bi bi-cash-stack kpi-icon text-danger"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-xl-3">
-                <div class="card kpi-card border-0 shadow-sm h-100">
-                    <div class="card-body d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="card-title text-muted mb-1">@Localizer["Total Purchase Orders"]</h6>
-                            <p class="card-text fs-4 fw-bold mb-0">@totalPurchaseOrders</p>
-                        </div>
-                        <i class="bi bi-truck kpi-icon text-primary"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-xl-3">
-                <div class="card kpi-card border-0 shadow-sm h-100">
-                    <div class="card-body d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="card-title text-muted mb-1">@Localizer["Quantity Purchased"]</h6>
-                            <p class="card-text fs-4 fw-bold mb-0">@totalQuantityPurchased</p>
-                        </div>
-                        <i class="bi bi-boxes kpi-icon text-info"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-xl-3">
-                <div class="card kpi-card border-0 shadow-sm h-100">
-                    <div class="card-body d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="card-title text-muted mb-1">@Localizer["Top Supplier"]</h6>
-                            <p class="card-text fs-4 fw-bold mb-0">@(topSupplier?.SupplierName ?? "-")</p>
-                        </div>
-                        <i class="bi bi-award kpi-icon text-warning"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        @if (Model.PurchasesByPeriod.Count > 0 || Model.PurchasesBySupplier.Count > 0)
+        @if (Model.ActiveType == ReportType.SalesOverview)
         {
             <div class="row g-3 mb-4">
-                <div class="col-lg-7">
-                    <div class="card chart-card border-0 shadow-sm h-100">
-                        <div class="card-body">
-                            <h6 class="card-title text-muted mb-3">@Localizer["Purchases by Period"]</h6>
-                            <canvas id="purchasesByPeriodChart"></canvas>
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Total Revenue"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@totalRevenue.ToEuro()</p>
+                            </div>
+                            <i class="bi bi-currency-exchange kpi-icon text-success"></i>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-5">
-                    <div class="card chart-card border-0 shadow-sm h-100">
-                        <div class="card-body">
-                            <h6 class="card-title text-muted mb-3">@Localizer["Purchases by Supplier"]</h6>
-                            <canvas id="purchasesBySupplierChart"></canvas>
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Total Orders"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@totalOrders</p>
+                            </div>
+                            <i class="bi bi-cart-check kpi-icon text-primary"></i>
                         </div>
                     </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Quantity Sold"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@totalQuantitySold</p>
+                            </div>
+                            <i class="bi bi-boxes kpi-icon text-info"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Top Category"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@(topCategory?.CategoryName ?? "-")</p>
+                            </div>
+                            <i class="bi bi-award kpi-icon text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.SalesByPeriod.Count > 0 || Model.SalesByCategory.Count > 0)
+            {
+                <div class="row g-3 mb-4">
+                    <div class="col-lg-7">
+                        <div class="card chart-card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted mb-3">@Localizer["Sales by Period"]</h6>
+                                <canvas id="salesByPeriodChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="card chart-card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted mb-3">@Localizer["Sales by Category"]</h6>
+                                <canvas id="salesByCategoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <h4 class="mb-3">@Localizer["Sales by Period"]</h4>
+                    @if (Model.SalesByPeriod.Count == 0)
+                    {
+                        <p class="text-muted">@Localizer["No sales found for the selected range."]</p>
+                    }
+                    else
+                    {
+                        <table id="salesByPeriodTable" class="table table-striped table-bordered align-middle w-100">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>@Localizer["Period"]</th>
+                                    <th>@Localizer["Order Count"]</th>
+                                    <th>@Localizer["Total Revenue"]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.SalesByPeriod)
+                                {
+                                    <tr>
+                                        <td>@item.PeriodLabel</td>
+                                        <td>@item.OrderCount</td>
+                                        <td data-order="@item.TotalRevenue">@item.TotalRevenue.ToEuro()</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-light fw-bold">
+                                    <td>@Localizer["Total"]</td>
+                                    <td>@totalOrders</td>
+                                    <td>@totalRevenue.ToEuro()</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    }
+                </div>
+
+                <div class="col-lg-6 mb-4">
+                    <h4 class="mb-3">@Localizer["Sales by Category"]</h4>
+                    @if (Model.SalesByCategory.Count == 0)
+                    {
+                        <p class="text-muted">@Localizer["No sales found for the selected range."]</p>
+                    }
+                    else
+                    {
+                        <table id="salesByCategoryTable" class="table table-striped table-bordered align-middle w-100">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>@Localizer["Category"]</th>
+                                    <th>@Localizer["Quantity Sold"]</th>
+                                    <th>@Localizer["Total Revenue"]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.SalesByCategory)
+                                {
+                                    <tr>
+                                        <td>@item.CategoryName</td>
+                                        <td>@item.QuantitySold</td>
+                                        <td data-order="@item.TotalRevenue">@item.TotalRevenue.ToEuro()</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-light fw-bold">
+                                    <td>@Localizer["Total"]</td>
+                                    <td>@totalQuantitySold</td>
+                                    <td>@Model.SalesByCategory.Sum(i => i.TotalRevenue).ToEuro()</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    }
                 </div>
             </div>
         }
 
-        <div class="row">
-            <div class="col-lg-6 mb-4">
-                <h4 class="mb-3">@Localizer["Purchases by Period"]</h4>
-                @if (Model.PurchasesByPeriod.Count == 0)
-                {
-                    <p class="text-muted">@Localizer["No purchases found for the selected range."]</p>
-                }
-                else
-                {
-                    <table id="purchasesByPeriodTable" class="table table-striped table-bordered align-middle w-100">
-                        <thead class="table-light">
-                            <tr>
-                                <th>@Localizer["Period"]</th>
-                                <th>@Localizer["Purchase Order Count"]</th>
-                                <th>@Localizer["Total Spend"]</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model.PurchasesByPeriod)
-                            {
-                                <tr>
-                                    <td>@item.PeriodLabel</td>
-                                    <td>@item.PurchaseOrderCount</td>
-                                    <td data-order="@item.TotalSpend">@item.TotalSpend.ToEuro()</td>
-                                </tr>
-                            }
-                        </tbody>
-                        <tfoot>
-                            <tr class="table-light fw-bold">
-                                <td>@Localizer["Total"]</td>
-                                <td>@totalPurchaseOrders</td>
-                                <td>@totalSpend.ToEuro()</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                }
+        @if (Model.ActiveType == ReportType.PurchasesOverview)
+        {
+            <div class="row g-3 mb-4">
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Total Spend"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@totalSpend.ToEuro()</p>
+                            </div>
+                            <i class="bi bi-cash-stack kpi-icon text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Total Purchase Orders"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@totalPurchaseOrders</p>
+                            </div>
+                            <i class="bi bi-truck kpi-icon text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Quantity Purchased"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@totalQuantityPurchased</p>
+                            </div>
+                            <i class="bi bi-boxes kpi-icon text-info"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Top Supplier"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@(topSupplier?.SupplierName ?? "-")</p>
+                            </div>
+                            <i class="bi bi-award kpi-icon text-warning"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="col-lg-6 mb-4">
-                <h4 class="mb-3">@Localizer["Purchases by Supplier"]</h4>
-                @if (Model.PurchasesBySupplier.Count == 0)
-                {
-                    <p class="text-muted">@Localizer["No purchases found for the selected range."]</p>
-                }
-                else
-                {
-                    <table id="purchasesBySupplierTable" class="table table-striped table-bordered align-middle w-100">
-                        <thead class="table-light">
-                            <tr>
-                                <th>@Localizer["Supplier"]</th>
-                                <th>@Localizer["Quantity Purchased"]</th>
-                                <th>@Localizer["Total Spend"]</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model.PurchasesBySupplier)
-                            {
+            @if (Model.PurchasesByPeriod.Count > 0 || Model.PurchasesBySupplier.Count > 0)
+            {
+                <div class="row g-3 mb-4">
+                    <div class="col-lg-7">
+                        <div class="card chart-card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted mb-3">@Localizer["Purchases by Period"]</h6>
+                                <canvas id="purchasesByPeriodChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="card chart-card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted mb-3">@Localizer["Purchases by Supplier"]</h6>
+                                <canvas id="purchasesBySupplierChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <h4 class="mb-3">@Localizer["Purchases by Period"]</h4>
+                    @if (Model.PurchasesByPeriod.Count == 0)
+                    {
+                        <p class="text-muted">@Localizer["No purchases found for the selected range."]</p>
+                    }
+                    else
+                    {
+                        <table id="purchasesByPeriodTable" class="table table-striped table-bordered align-middle w-100">
+                            <thead class="table-light">
                                 <tr>
-                                    <td>@item.SupplierName</td>
-                                    <td>@item.QuantityPurchased</td>
-                                    <td data-order="@item.TotalSpend">@item.TotalSpend.ToEuro()</td>
+                                    <th>@Localizer["Period"]</th>
+                                    <th>@Localizer["Purchase Order Count"]</th>
+                                    <th>@Localizer["Total Spend"]</th>
                                 </tr>
-                            }
-                        </tbody>
-                        <tfoot>
-                            <tr class="table-light fw-bold">
-                                <td>@Localizer["Total"]</td>
-                                <td>@totalQuantityPurchased</td>
-                                <td>@Model.PurchasesBySupplier.Sum(i => i.TotalSpend).ToEuro()</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                }
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.PurchasesByPeriod)
+                                {
+                                    <tr>
+                                        <td>@item.PeriodLabel</td>
+                                        <td>@item.PurchaseOrderCount</td>
+                                        <td data-order="@item.TotalSpend">@item.TotalSpend.ToEuro()</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-light fw-bold">
+                                    <td>@Localizer["Total"]</td>
+                                    <td>@totalPurchaseOrders</td>
+                                    <td>@totalSpend.ToEuro()</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    }
+                </div>
+
+                <div class="col-lg-6 mb-4">
+                    <h4 class="mb-3">@Localizer["Purchases by Supplier"]</h4>
+                    @if (Model.PurchasesBySupplier.Count == 0)
+                    {
+                        <p class="text-muted">@Localizer["No purchases found for the selected range."]</p>
+                    }
+                    else
+                    {
+                        <table id="purchasesBySupplierTable" class="table table-striped table-bordered align-middle w-100">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>@Localizer["Supplier"]</th>
+                                    <th>@Localizer["Quantity Purchased"]</th>
+                                    <th>@Localizer["Total Spend"]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.PurchasesBySupplier)
+                                {
+                                    <tr>
+                                        <td>@item.SupplierName</td>
+                                        <td>@item.QuantityPurchased</td>
+                                        <td data-order="@item.TotalSpend">@item.TotalSpend.ToEuro()</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-light fw-bold">
+                                    <td>@Localizer["Total"]</td>
+                                    <td>@totalQuantityPurchased</td>
+                                    <td>@Model.PurchasesBySupplier.Sum(i => i.TotalSpend).ToEuro()</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    }
+                </div>
             </div>
-        </div>
+        }
+
+        @if (Model.ActiveType == ReportType.LowStock)
+        {
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Critical Items"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@Model.LowStock.Count</p>
+                            </div>
+                            <i class="bi bi-exclamation-triangle kpi-icon text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Total Shortfall"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@totalShortfall</p>
+                            </div>
+                            <i class="bi bi-boxes kpi-icon text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Categories Affected"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@affectedCategories</p>
+                            </div>
+                            <i class="bi bi-tags kpi-icon text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.LowStock.Count == 0)
+            {
+                <p class="text-muted">@Localizer["No low stock items found."]</p>
+            }
+            else
+            {
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <div class="card chart-card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted mb-3">@Localizer["Low Stock"]</h6>
+                                <canvas id="lowStockChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <table id="lowStockTable" class="table table-striped table-bordered align-middle w-100">
+                    <thead class="table-light">
+                        <tr>
+                            <th>@Localizer["Product"]</th>
+                            <th>@Localizer["SKU"]</th>
+                            <th>@Localizer["Category"]</th>
+                            <th>@Localizer["In Stock"]</th>
+                            <th>@Localizer["Minimum"]</th>
+                            <th>@Localizer["Shortfall"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.LowStock)
+                        {
+                            <tr class="@(item.QuantityInStock <= item.MinimumQuantity ? "table-danger" : "")">
+                                <td>@item.ProductName</td>
+                                <td>@item.SKU</td>
+                                <td>@item.CategoryName</td>
+                                <td>@item.QuantityInStock</td>
+                                <td>@item.MinimumQuantity</td>
+                                <td>@item.Shortfall</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        }
+
+        @if (Model.ActiveType == ReportType.ProductProfitability)
+        {
+            <div class="row g-3 mb-4">
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Total Revenue"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@profitRevenue.ToEuro()</p>
+                            </div>
+                            <i class="bi bi-currency-exchange kpi-icon text-success"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Total Cost"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@profitCost.ToEuro()</p>
+                            </div>
+                            <i class="bi bi-cash-stack kpi-icon text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Gross Profit"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@grossProfit.ToEuro()</p>
+                            </div>
+                            <i class="bi bi-piggy-bank kpi-icon text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Avg Margin"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@avgMargin%</p>
+                            </div>
+                            <i class="bi bi-percent kpi-icon text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.ProductProfitability.Count == 0)
+            {
+                <p class="text-muted">@Localizer["No profitability data found for the selected range."]</p>
+            }
+            else
+            {
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <div class="card chart-card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted mb-3">@Localizer["Gross Profit by Product"]</h6>
+                                <canvas id="profitabilityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <table id="profitabilityTable" class="table table-striped table-bordered align-middle w-100">
+                    <thead class="table-light">
+                        <tr>
+                            <th>@Localizer["Product"]</th>
+                            <th>@Localizer["SKU"]</th>
+                            <th>@Localizer["Category"]</th>
+                            <th>@Localizer["Quantity Sold"]</th>
+                            <th>@Localizer["Total Revenue"]</th>
+                            <th>@Localizer["Total Cost"]</th>
+                            <th>@Localizer["Gross Profit"]</th>
+                            <th>@Localizer["Margin %"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.ProductProfitability)
+                        {
+                            <tr>
+                                <td>@item.ProductName</td>
+                                <td>@item.SKU</td>
+                                <td>@item.CategoryName</td>
+                                <td>@item.QuantitySold</td>
+                                <td data-order="@item.TotalRevenue">@item.TotalRevenue.ToEuro()</td>
+                                <td data-order="@item.TotalCost">@item.TotalCost.ToEuro()</td>
+                                <td data-order="@item.GrossProfit">@item.GrossProfit.ToEuro()</td>
+                                <td>@item.MarginPercent%</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-light fw-bold">
+                            <td colspan="3">@Localizer["Total"]</td>
+                            <td>@Model.ProductProfitability.Sum(i => i.QuantitySold)</td>
+                            <td>@profitRevenue.ToEuro()</td>
+                            <td>@profitCost.ToEuro()</td>
+                            <td>@grossProfit.ToEuro()</td>
+                            <td>@avgMargin%</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            }
+        }
+
+        @if (Model.ActiveType == ReportType.TopCustomers)
+        {
+            <div class="row g-3 mb-4">
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Customers"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@totalCustomersWithOrders</p>
+                            </div>
+                            <i class="bi bi-people kpi-icon text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Total Revenue"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@customersRevenue.ToEuro()</p>
+                            </div>
+                            <i class="bi bi-currency-exchange kpi-icon text-success"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Avg Order Value"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@overallAvgOrderValue.ToEuro()</p>
+                            </div>
+                            <i class="bi bi-receipt kpi-icon text-info"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Top Customer"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@(topCustomer?.CustomerName ?? "-")</p>
+                            </div>
+                            <i class="bi bi-award kpi-icon text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.TopCustomers.Count == 0)
+            {
+                <p class="text-muted">@Localizer["No customer data found for the selected range."]</p>
+            }
+            else
+            {
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <div class="card chart-card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted mb-3">@Localizer["Top Customers"]</h6>
+                                <canvas id="topCustomersChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <table id="topCustomersTable" class="table table-striped table-bordered align-middle w-100">
+                    <thead class="table-light">
+                        <tr>
+                            <th>@Localizer["Customer"]</th>
+                            <th>@Localizer["Company"]</th>
+                            <th>@Localizer["Order Count"]</th>
+                            <th>@Localizer["Total Revenue"]</th>
+                            <th>@Localizer["Avg Order Value"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.TopCustomers)
+                        {
+                            <tr>
+                                <td>@item.CustomerName</td>
+                                <td>@(item.CompanyName ?? "-")</td>
+                                <td>@item.OrderCount</td>
+                                <td data-order="@item.TotalRevenue">@item.TotalRevenue.ToEuro()</td>
+                                <td data-order="@item.AverageOrderValue">@item.AverageOrderValue.ToEuro()</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        }
+
+        @if (Model.ActiveType == ReportType.InventoryMovements)
+        {
+            <div class="row g-3 mb-4">
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Total Inflow"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@totalInflow</p>
+                            </div>
+                            <i class="bi bi-box-arrow-in-down kpi-icon text-success"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Total Outflow"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@totalOutflow</p>
+                            </div>
+                            <i class="bi bi-box-arrow-up kpi-icon text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Net Change"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@netChange</p>
+                            </div>
+                            <i class="bi bi-arrow-left-right kpi-icon text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Movements"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@Model.InventoryMovements.Count</p>
+                            </div>
+                            <i class="bi bi-list-ul kpi-icon text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.InventoryMovements.Count == 0)
+            {
+                <p class="text-muted">@Localizer["No inventory movements found for the selected range."]</p>
+            }
+            else
+            {
+                <div class="row g-3 mb-4">
+                    <div class="col-lg-5">
+                        <div class="card chart-card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted mb-3">@Localizer["Movements by Type"]</h6>
+                                <canvas id="inventoryMovementsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <table id="inventoryMovementsTable" class="table table-striped table-bordered align-middle w-100">
+                    <thead class="table-light">
+                        <tr>
+                            <th>@Localizer["Date"]</th>
+                            <th>@Localizer["Product"]</th>
+                            <th>@Localizer["SKU"]</th>
+                            <th>@Localizer["Type"]</th>
+                            <th>@Localizer["Quantity"]</th>
+                            <th>@Localizer["Reason"]</th>
+                            <th>@Localizer["Reference"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.InventoryMovements)
+                        {
+                            <tr>
+                                <td data-order="@item.Date.Ticks">@item.Date.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@item.ProductName</td>
+                                <td>@item.SKU</td>
+                                <td><span class="badge @BadgeClass(item.MovementType)">@MovementText(item.MovementType)</span></td>
+                                <td>@item.Quantity</td>
+                                <td>@(item.Reason ?? "-")</td>
+                                <td>@item.SourceReference</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        }
+
+        @if (Model.ActiveType == ReportType.SalesByEmployee)
+        {
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Total Revenue"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@employeeRevenue.ToEuro()</p>
+                            </div>
+                            <i class="bi bi-currency-exchange kpi-icon text-success"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Total Orders"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@employeeOrders</p>
+                            </div>
+                            <i class="bi bi-cart-check kpi-icon text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card kpi-card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted mb-1">@Localizer["Top Employee"]</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">@(topEmployee?.EmployeeName ?? "-")</p>
+                            </div>
+                            <i class="bi bi-award kpi-icon text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.SalesByEmployee.Count == 0)
+            {
+                <p class="text-muted">@Localizer["No sales found for the selected range."]</p>
+            }
+            else
+            {
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <div class="card chart-card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted mb-3">@Localizer["Sales by Employee"]</h6>
+                                <canvas id="salesByEmployeeChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <table id="salesByEmployeeTable" class="table table-striped table-bordered align-middle w-100">
+                    <thead class="table-light">
+                        <tr>
+                            <th>@Localizer["Employee"]</th>
+                            <th>@Localizer["Order Count"]</th>
+                            <th>@Localizer["Total Revenue"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.SalesByEmployee)
+                        {
+                            <tr>
+                                <td>@item.EmployeeName</td>
+                                <td>@item.OrderCount</td>
+                                <td data-order="@item.TotalRevenue">@item.TotalRevenue.ToEuro()</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-light fw-bold">
+                            <td>@Localizer["Total"]</td>
+                            <td>@employeeOrders</td>
+                            <td>@employeeRevenue.ToEuro()</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            }
+        }
     </div>
 </div>
 
@@ -363,8 +907,6 @@
     <script>
         $(function () {
             var chartPalette = ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#6f42c1', '#0dcaf0', '#fd7e14', '#20c997'];
-            var purchasesByPeriodChart = null;
-            var purchasesBySupplierChart = null;
 
             @if (Model.SalesByPeriod.Count > 0)
             {
@@ -424,7 +966,7 @@
                 const purchasePeriodSpend = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PurchasesByPeriod.Select(i => i.TotalSpend)));
                 const purchasePeriodColors = purchasePeriodLabels.map(function (_, i) { return chartPalette[i % chartPalette.length]; });
 
-                purchasesByPeriodChart = new Chart(document.getElementById('purchasesByPeriodChart'), {
+                new Chart(document.getElementById('purchasesByPeriodChart'), {
                     type: 'bar',
                     data: {
                         labels: purchasePeriodLabels,
@@ -451,7 +993,7 @@
                 const supplierSpend = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PurchasesBySupplier.Select(i => i.TotalSpend)));
                 const supplierColors = supplierLabels.map(function (_, i) { return chartPalette[i % chartPalette.length]; });
 
-                purchasesBySupplierChart = new Chart(document.getElementById('purchasesBySupplierChart'), {
+                new Chart(document.getElementById('purchasesBySupplierChart'), {
                     type: 'doughnut',
                     data: {
                         labels: supplierLabels,
@@ -463,6 +1005,140 @@
                     options: {
                         responsive: true,
                         plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+                </text>
+            }
+
+            @if (Model.LowStock.Count > 0)
+            {
+                var lowStockTop = Model.LowStock.Take(10).ToList();
+                <text>
+                const lowStockLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(lowStockTop.Select(i => i.ProductName)));
+                const lowStockData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(lowStockTop.Select(i => i.Shortfall)));
+                const lowStockColors = lowStockLabels.map(function (_, i) { return chartPalette[i % chartPalette.length]; });
+
+                new Chart(document.getElementById('lowStockChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: lowStockLabels,
+                        datasets: [{
+                            label: '@Html.Raw(Localizer["Shortfall"])',
+                            data: lowStockData,
+                            backgroundColor: lowStockColors,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+                </text>
+            }
+
+            @if (Model.ProductProfitability.Count > 0)
+            {
+                var profitabilityTop = Model.ProductProfitability.OrderByDescending(i => i.GrossProfit).Take(10).ToList();
+                <text>
+                const profitabilityLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(profitabilityTop.Select(i => i.ProductName)));
+                const profitabilityData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(profitabilityTop.Select(i => i.GrossProfit)));
+                const profitabilityColors = profitabilityLabels.map(function (_, i) { return chartPalette[i % chartPalette.length]; });
+
+                new Chart(document.getElementById('profitabilityChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: profitabilityLabels,
+                        datasets: [{
+                            label: '@Html.Raw(Localizer["Gross Profit (€)"])',
+                            data: profitabilityData,
+                            backgroundColor: profitabilityColors,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+                </text>
+            }
+
+            @if (Model.TopCustomers.Count > 0)
+            {
+                var topCustomersTop = Model.TopCustomers.Take(10).ToList();
+                <text>
+                const topCustomersLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(topCustomersTop.Select(i => i.CustomerName)));
+                const topCustomersData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(topCustomersTop.Select(i => i.TotalRevenue)));
+                const topCustomersColors = topCustomersLabels.map(function (_, i) { return chartPalette[i % chartPalette.length]; });
+
+                new Chart(document.getElementById('topCustomersChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: topCustomersLabels,
+                        datasets: [{
+                            label: '@Html.Raw(Localizer["Revenue (€)"])',
+                            data: topCustomersData,
+                            backgroundColor: topCustomersColors,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+                </text>
+            }
+
+            @if (Model.InventoryMovements.Count > 0)
+            {
+                <text>
+                const movementTypeLabels = ['@Html.Raw(Localizer["Inflow"])', '@Html.Raw(Localizer["Outflow"])', '@Html.Raw(Localizer["Adjustment"])'];
+                const movementTypeData = [@totalInflow, @totalOutflow, @Model.InventoryMovements.Where(m => m.MovementType == MovementType.Adjustment).Sum(m => m.Quantity)];
+
+                new Chart(document.getElementById('inventoryMovementsChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: movementTypeLabels,
+                        datasets: [{
+                            data: movementTypeData,
+                            backgroundColor: ['#198754', '#dc3545', '#6c757d']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+                </text>
+            }
+
+            @if (Model.SalesByEmployee.Count > 0)
+            {
+                <text>
+                const employeeLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SalesByEmployee.Select(i => i.EmployeeName)));
+                const employeeRevenueData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SalesByEmployee.Select(i => i.TotalRevenue)));
+                const employeeColors = employeeLabels.map(function (_, i) { return chartPalette[i % chartPalette.length]; });
+
+                new Chart(document.getElementById('salesByEmployeeChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: employeeLabels,
+                        datasets: [{
+                            label: '@Html.Raw(Localizer["Revenue (€)"])',
+                            data: employeeRevenueData,
+                            backgroundColor: employeeColors,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
                     }
                 });
                 </text>
@@ -489,24 +1165,13 @@
                 ]
             };
 
-            if ($('#salesByPeriodTable').length) {
-                $('#salesByPeriodTable').DataTable(reportTableOptions);
-            }
-            if ($('#salesByCategoryTable').length) {
-                $('#salesByCategoryTable').DataTable(reportTableOptions);
-            }
-
-            var purchasesByPeriodTable = $('#purchasesByPeriodTable').length ? $('#purchasesByPeriodTable').DataTable(reportTableOptions) : null;
-            var purchasesBySupplierTable = $('#purchasesBySupplierTable').length ? $('#purchasesBySupplierTable').DataTable(reportTableOptions) : null;
-
-            // Charts and DataTables render at zero width while their tab pane is hidden,
-            // so recalculate both once the Purchase Reports tab actually becomes visible.
-            document.getElementById('purchases-tab').addEventListener('shown.bs.tab', function () {
-                if (purchasesByPeriodChart) purchasesByPeriodChart.resize();
-                if (purchasesBySupplierChart) purchasesBySupplierChart.resize();
-                if (purchasesByPeriodTable) purchasesByPeriodTable.columns.adjust();
-                if (purchasesBySupplierTable) purchasesBySupplierTable.columns.adjust();
-            });
+            ['#salesByPeriodTable', '#salesByCategoryTable', '#purchasesByPeriodTable', '#purchasesBySupplierTable',
+             '#lowStockTable', '#profitabilityTable', '#topCustomersTable', '#inventoryMovementsTable', '#salesByEmployeeTable']
+                .forEach(function (selector) {
+                    if ($(selector).length) {
+                        $(selector).DataTable(reportTableOptions);
+                    }
+                });
         });
     </script>
 }

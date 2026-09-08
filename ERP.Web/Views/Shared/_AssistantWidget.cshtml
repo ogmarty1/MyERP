@@ -1,0 +1,38 @@
+<div id="assistantWidget">
+    <button id="assistantToggleBtn" type="button" class="btn btn-primary rounded-circle assistant-fab" data-bs-toggle="offcanvas" data-bs-target="#assistantOffcanvas" aria-controls="assistantOffcanvas" title="@Localizer["AI Assistant"]">
+        <i class="bi bi-robot fs-4"></i>
+    </button>
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="assistantOffcanvas" aria-labelledby="assistantOffcanvasLabel">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title" id="assistantOffcanvasLabel"><i class="bi bi-robot me-2"></i>@Localizer["AI Assistant"]</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column p-0">
+            <div class="d-flex gap-2 p-2 border-bottom flex-wrap">
+                <button type="button" class="btn btn-sm btn-outline-secondary assistant-quick-action" data-prompt="@Localizer["Summarize today's dashboard for me."]">
+                    <i class="bi bi-clipboard-data me-1"></i>@Localizer["Summarize dashboard"]
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary assistant-quick-action" data-prompt="@Localizer["Which products should I reorder, and how much?"]">
+                    <i class="bi bi-boxes me-1"></i>@Localizer["Suggest reorders"]
+                </button>
+            </div>
+            <div id="assistantMessages" class="flex-grow-1 overflow-auto p-3">
+                <div class="assistant-message assistant-message-bot">@Localizer["Hi! Ask me about your business data, or use a quick action above."]</div>
+            </div>
+            <form id="assistantForm" class="border-top p-2 d-flex gap-2">
+                @Html.AntiForgeryToken()
+                <input type="text" id="assistantInput" class="form-control" placeholder="@Localizer["Ask a question..."]" autocomplete="off" />
+                <button type="submit" class="btn btn-primary"><i class="bi bi-send"></i></button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.assistantChatUrl = '@Url.Action("Chat", "Assistant")';
+    window.assistantDraftUrl = '@Url.Action("Draft", "Assistant")';
+    window.assistantAntiForgeryToken = document.querySelector('#assistantWidget input[name="__RequestVerificationToken"]').value;
+    window.assistantErrorMessage = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Localizer["The assistant is not available right now."].Value));
+    window.assistantThinkingMessage = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Localizer["Thinking..."].Value));
+</script>

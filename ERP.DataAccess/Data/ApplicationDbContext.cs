@@ -23,6 +23,8 @@ namespace ERP.DataAccess.Data
         public DbSet<InventoryMovement> InventoryMovements { get; set; }
         public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
         public DbSet<PurchaseOrderDetail> PurchaseOrderDetails { get; set; }
+        public DbSet<PriceCheck> PriceChecks { get; set; }
+        public DbSet<PriceCheckOffer> PriceCheckOffers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -46,6 +48,20 @@ namespace ERP.DataAccess.Data
                 .WithMany()
                 .HasForeignKey(p => p.SupplierId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Fluent API конфигурация за PriceCheck -> Product връзката
+            modelBuilder.Entity<PriceCheck>()
+                .HasOne(pc => pc.Product)
+                .WithMany()
+                .HasForeignKey(pc => pc.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Fluent API конфигурация за PriceCheckOffer -> PriceCheck връзката (изтрива се заедно с проверката)
+            modelBuilder.Entity<PriceCheckOffer>()
+                .HasOne(o => o.PriceCheck)
+                .WithMany(pc => pc.Offers)
+                .HasForeignKey(o => o.PriceCheckId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Прилага всички IEntityTypeConfiguration<T> класове от текущия assembly
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());

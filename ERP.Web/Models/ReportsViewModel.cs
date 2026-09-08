@@ -19,10 +19,16 @@ namespace ERP.Web.Models
 
     public class ReportsViewModel
     {
+        public ReportType ActiveType { get; set; } = ReportType.SalesOverview;
         public ReportsFilterViewModel Filter { get; set; } = new();
         public List<SalesByPeriodItem> SalesByPeriod { get; set; } = new();
         public List<SalesByCategoryItem> SalesByCategory { get; set; } = new();
         public List<PurchasesByPeriodItem> PurchasesByPeriod { get; set; } = new();
         public List<PurchasesBySupplierItem> PurchasesBySupplier { get; set; } = new();
+        public List<LowStockItem> LowStock { get; set; } = new();
+        public List<ProductProfitabilityItem> ProductProfitability { get; set; } = new();
+        public List<TopCustomerItem> TopCustomers { get; set; } = new();
+        public List<InventoryMovementItem> InventoryMovements { get; set; } = new();
+        public List<SalesByEmployeeItem> SalesByEmployee { get; set; } = new();
     }
 }

@@ -38,6 +38,16 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
 
+builder.Services.AddHttpClient<IAssistantService, AssistantService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(120);
+});
+
+builder.Services.AddHttpClient<IPriceComparisonService, PriceComparisonService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -46,6 +56,11 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 builder.Services.AddAuthorization();
+
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "RequestVerificationToken";
+});
 
 var app = builder.Build();
 

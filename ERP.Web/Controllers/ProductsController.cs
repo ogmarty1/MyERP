@@ -15,6 +15,7 @@ namespace ERP.Web.Controllers
         private readonly ICategoryService _categoryService;
         private readonly ISupplierService _supplierService;
         private readonly IInventoryService _inventoryService;
+        private readonly IPriceComparisonService _priceComparisonService;
         private readonly IStringLocalizer<SharedResource> _localizer;
 
         public ProductsController(
@@ -22,12 +23,14 @@ namespace ERP.Web.Controllers
             ICategoryService categoryService,
             ISupplierService supplierService,
             IInventoryService inventoryService,
+            IPriceComparisonService priceComparisonService,
             IStringLocalizer<SharedResource> localizer)
         {
             _productService = productService;
             _categoryService = categoryService;
             _supplierService = supplierService;
             _inventoryService = inventoryService;
+            _priceComparisonService = priceComparisonService;
             _localizer = localizer;
         }
 
@@ -190,6 +193,26 @@ namespace ERP.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost]
+        [Authorize(Roles = "Manager,Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CheckMarketPrice(int id)
+        {
+            try
+            {
+                var result = await _priceComparisonService.CheckPriceAsync(id);
+                TempData["SuccessMessage"] = result.Offers.Count > 0
+                    ? _localizer["Found {0} market price(s) for this product.", result.Offers.Count].Value
+                    : _localizer["No market prices were found for this product."].Value;
+            }
+            catch (Exception)
+            {
+                TempData["ErrorMessage"] = _localizer["Could not check market prices right now. Please try again later."].Value;
+            }
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
         private async Task<ProductDetailsViewModel> BuildDetailsViewModelAsync(
             ERP.DataAccess.Models.Product product,
             ProductFormViewModel? formOverride = null)
@@ -214,11 +237,13 @@ namespace ERP.Web.Controllers
             await PopulateDropdownsAsync(form);
 
             var orderHistory = await _productService.GetOrderHistoryAsync(product.Id);
+            var priceHistory = await _priceComparisonService.GetHistoryAsync(product.Id);
 
             return new ProductDetailsViewModel
             {
                 Form = form,
-                OrderHistory = orderHistory
+                OrderHistory = orderHistory,
+                PriceHistory = priceHistory
             };
         }
 

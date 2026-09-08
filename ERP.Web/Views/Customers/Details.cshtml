@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = Model.Form.Name;
     var forceEdit = ViewData["ForceEditMode"] is true;
+    var customerContext = $"Customer name: {Model.Form.Name}. Company: {Model.Form.CompanyName}.";
 }
 
 <div class="js-details-form-wrapper" data-force-edit="@(forceEdit ? "true" : "false")">
@@ -91,6 +92,12 @@
                     <legend>@Localizer["Notes"]</legend>
                     <textarea asp-for="Form.Notes" class="form-control erp-editable" rows="3" readonly></textarea>
                     <span asp-validation-for="Form.Notes" class="text-danger"></span>
+                    <button type="button" class="btn btn-sm btn-outline-primary js-ai-suggest-btn mt-1" disabled
+                            data-target="#Form_Notes"
+                            data-instruction="@Localizer["Write a short internal note about this customer."]"
+                            data-context="@customerContext">
+                        <i class="bi bi-stars"></i> @Localizer["AI Suggest"]
+                    </button>
                 </fieldset>
             </div>
         </div>

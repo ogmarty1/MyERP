@@ -404,4 +404,68 @@
   <data name="Order was updated successfully." xml:space="preserve"><value>Поръчката беше обновена успешно.</value></data>
   <data name="Customer was created successfully." xml:space="preserve"><value>Клиентът беше създаден успешно.</value></data>
   <data name="Something went wrong. Please try again." xml:space="preserve"><value>Възникна грешка. Моля, опитайте отново.</value></data>
+
+  <!-- Reports sidebar + new report types -->
+  <data name="Sales &amp; Purchases" xml:space="preserve"><value>Продажби &amp; Доставки</value></data>
+  <data name="Business Insights" xml:space="preserve"><value>Бизнес анализи</value></data>
+  <data name="Sales Overview" xml:space="preserve"><value>Обзор на продажбите</value></data>
+  <data name="Purchases Overview" xml:space="preserve"><value>Обзор на доставките</value></data>
+  <data name="Product Profitability" xml:space="preserve"><value>Рентабилност на продукти</value></data>
+  <data name="Top Customers" xml:space="preserve"><value>Топ клиенти</value></data>
+  <data name="Inventory Movements" xml:space="preserve"><value>Движение на наличности</value></data>
+  <data name="Sales by Employee" xml:space="preserve"><value>Продажби по служител</value></data>
+  <data name="Critical Items" xml:space="preserve"><value>Критични артикули</value></data>
+  <data name="Total Shortfall" xml:space="preserve"><value>Общ недостиг</value></data>
+  <data name="Categories Affected" xml:space="preserve"><value>Засегнати категории</value></data>
+  <data name="No low stock items found." xml:space="preserve"><value>Няма продукти с нисък запас.</value></data>
+  <data name="In Stock" xml:space="preserve"><value>Наличност</value></data>
+  <data name="Minimum" xml:space="preserve"><value>Минимум</value></data>
+  <data name="Shortfall" xml:space="preserve"><value>Недостиг</value></data>
+  <data name="Total Cost" xml:space="preserve"><value>Обща себестойност</value></data>
+  <data name="Gross Profit" xml:space="preserve"><value>Брутна печалба</value></data>
+  <data name="Avg Margin" xml:space="preserve"><value>Средна надценка</value></data>
+  <data name="Margin %" xml:space="preserve"><value>Надценка %</value></data>
+  <data name="No profitability data found for the selected range." xml:space="preserve"><value>Няма данни за рентабилност за избрания период.</value></data>
+  <data name="Gross Profit by Product" xml:space="preserve"><value>Брутна печалба по продукт</value></data>
+  <data name="Gross Profit (€)" xml:space="preserve"><value>Брутна печалба (€)</value></data>
+  <data name="Avg Order Value" xml:space="preserve"><value>Средна стойност на поръчка</value></data>
+  <data name="Top Customer" xml:space="preserve"><value>Топ клиент</value></data>
+  <data name="No customer data found for the selected range." xml:space="preserve"><value>Няма данни за клиенти за избрания период.</value></data>
+  <data name="Date" xml:space="preserve"><value>Дата</value></data>
+  <data name="Reference" xml:space="preserve"><value>Референция</value></data>
+  <data name="No inventory movements found for the selected range." xml:space="preserve"><value>Няма движения на наличности за избрания период.</value></data>
+  <data name="Movements by Type" xml:space="preserve"><value>Движения по тип</value></data>
+  <data name="Total Inflow" xml:space="preserve"><value>Общо постъпления</value></data>
+  <data name="Total Outflow" xml:space="preserve"><value>Общо изписвания</value></data>
+  <data name="Net Change" xml:space="preserve"><value>Нетна промяна</value></data>
+  <data name="Movements" xml:space="preserve"><value>Движения</value></data>
+  <data name="Employee" xml:space="preserve"><value>Служител</value></data>
+  <data name="Top Employee" xml:space="preserve"><value>Топ служител</value></data>
+
+  <!-- AI Assistant -->
+  <data name="AI Assistant" xml:space="preserve"><value>AI Асистент</value></data>
+  <data name="AI Suggest" xml:space="preserve"><value>AI Предложение</value></data>
+  <data name="Summarize dashboard" xml:space="preserve"><value>Обобщи таблото</value></data>
+  <data name="Suggest reorders" xml:space="preserve"><value>Предложи поръчки за наличности</value></data>
+  <data name="Summarize today's dashboard for me." xml:space="preserve"><value>Обобщи данните от таблото за днес.</value></data>
+  <data name="Which products should I reorder, and how much?" xml:space="preserve"><value>Кои продукти трябва да поръчам отново и в какво количество?</value></data>
+  <data name="Hi! Ask me about your business data, or use a quick action above." xml:space="preserve"><value>Здравейте! Попитайте ме за бизнес данните си или използвайте бърза опция по-горе.</value></data>
+  <data name="Ask a question..." xml:space="preserve"><value>Задайте въпрос...</value></data>
+  <data name="Thinking..." xml:space="preserve"><value>Мисля...</value></data>
+  <data name="The assistant is not available right now." xml:space="preserve"><value>Асистентът не е достъпен в момента.</value></data>
+  <data name="Write a short, appealing product description for this product." xml:space="preserve"><value>Напиши кратко, привлекателно описание на този продукт.</value></data>
+  <data name="Write a short internal note about this product." xml:space="preserve"><value>Напиши кратка вътрешна бележка за този продукт.</value></data>
+  <data name="Write a short internal note about this customer." xml:space="preserve"><value>Напиши кратка вътрешна бележка за този клиент.</value></data>
+  <data name="Write a short internal note about this order." xml:space="preserve"><value>Напиши кратка вътрешна бележка за тази поръчка.</value></data>
+
+  <!-- SerpAPI Market Price Comparison -->
+  <data name="Market Price Comparison" xml:space="preserve"><value>Сравнение на пазарни цени</value></data>
+  <data name="Check Market Price" xml:space="preserve"><value>Провери пазарна цена</value></data>
+  <data name="No market price checks yet. Click &quot;Check Market Price&quot; to search." xml:space="preserve"><value>Все още няма проверки на пазарни цени. Натиснете „Провери пазарна цена", за да търсите.</value></data>
+  <data name="Checked At" xml:space="preserve"><value>Проверено на</value></data>
+  <data name="Store" xml:space="preserve"><value>Магазин</value></data>
+  <data name="Diff vs. Your Price" xml:space="preserve"><value>Разлика спрямо вашата цена</value></data>
+  <data name="Found {0} market price(s) for this product." xml:space="preserve"><value>Намерени са {0} пазарни цени за този продукт.</value></data>
+  <data name="No market prices were found for this product." xml:space="preserve"><value>Не бяха намерени пазарни цени за този продукт.</value></data>
+  <data name="Could not check market prices right now. Please try again later." xml:space="preserve"><value>Проверката на пазарни цени не бе възможна в момента. Моля, опитайте отново по-късно.</value></data>
 </root>

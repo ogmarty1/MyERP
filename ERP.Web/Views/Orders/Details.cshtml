@@ -8,6 +8,7 @@
     var canManage = User.IsInRole("Manager") || User.IsInRole("Admin");
     var isCancelled = order.Status == OrderStatus.Cancelled;
     var forceEdit = ViewData["ForceEditMode"] is true;
+    var orderContext = $"Order number: {order.OrderNumber}. Customer: {order.Customer.Name}.";
 
     string BadgeClass(OrderStatus status) => status switch
     {
@@ -214,7 +215,13 @@
 
         <fieldset class="erp-field-group erp-field-group--secondary">
             <legend>@Localizer["Notes"]</legend>
-            <textarea name="Notes" class="form-control erp-editable" rows="3" readonly>@order.Notes</textarea>
+            <textarea id="orderNotes" name="Notes" class="form-control erp-editable" rows="3" readonly>@order.Notes</textarea>
+            <button type="button" class="btn btn-sm btn-outline-primary js-ai-suggest-btn mt-1" disabled
+                    data-target="#orderNotes"
+                    data-instruction="@Localizer["Write a short internal note about this order."]"
+                    data-context="@orderContext">
+                <i class="bi bi-stars"></i> @Localizer["AI Suggest"]
+            </button>
         </fieldset>
     </form>
 </div>
